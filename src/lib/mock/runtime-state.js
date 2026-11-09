@@ -1,0 +1,33 @@
+import {
+  initialAccesExceptionnels,
+  initialAffectations,
+  initialCycles,
+  initialDossierCellules,
+  initialDossiers,
+  initialMouvements,
+  initialNotifications,
+  initialNotes,
+  initialObservations,
+  initialCellules,
+  initialPrisesEnCharge,
+  initialReouvertures,
+  initialUtilisateurs,
+  initialVersions,
+} from "@/lib/mock/data";
+
+export const mockRuntime = {
+  accesExceptionnels: [...initialAccesExceptionnels],
+  affectations: [...initialAffectations],
+  cellulesDossiers: [...initialDossierCellules],
+  cellules: [...initialCellules],
+  cycles: [...initialCycles],
+  dossiers: [...initialDossiers],
+  mouvements: [...initialMouvements],
+  notifications: [...initialNotifications],
+  notes: [...initialNotes],
+  observations: [...initialObservations],
+  prisesEnCharge: [...initialPrisesEnCharge],
+  reouvertures: [...initialReouvertures],
+  utilisateurs: [...initialUtilisateurs],
+  versions: [...initialVersions],
+};
