@@ -7,7 +7,8 @@
  */
 
 import { Role } from "@/types";
-import { initialPrisesEnCharge, initialUtilisateurs } from "@/src/lib/mock/data";
+import { mockRuntime } from "@/lib/mock/runtime-state";
+import { initialUtilisateurs } from "@/lib/mock/data";
 
 export { Role };
 export const BESD_ROLES = Role;
@@ -195,16 +196,19 @@ export const ROUTE_PERMISSIONS = Object.freeze({
     Role.COMPTABLE,
   ],
   "/recherche": [
+    Role.SECRETARIAT,
     Role.CHEF_BUREAU,
     Role.CHEF_BUREAU_ADJOINT,
     Role.CHEF_CELLULE,
     Role.CHEF_CELLULE_ADJOINT,
     Role.CONSEILLER,
     Role.CONSEILLER_HORS_CELLULE,
+    Role.COMPTABLE,
   ],
   "/administration/acces-exceptionnels": [
     Role.CHEF_BUREAU,
     Role.CHEF_BUREAU_ADJOINT,
+    Role.CONSEILLER_HORS_CELLULE,
   ],
   "/administration/cellules": [
     Role.CHEF_BUREAU,
@@ -367,7 +371,7 @@ export function filterSidebarByRole(groups, role) {
  * @param {Array} [prisesEnCharge]
  * @returns {Object|null}
  */
-export function findActivePriseEnCharge(dossierId, adjointId, prisesEnCharge = initialPrisesEnCharge) {
+export function findActivePriseEnCharge(dossierId, adjointId, prisesEnCharge = mockRuntime.prisesEnCharge) {
   if (!dossierId) return null;
   return (
     prisesEnCharge.find(
@@ -392,7 +396,7 @@ export function evaluatePermission(role, ability, context = {}) {
     return { allowed: false, reason: "Utilisateur non connecté" };
   }
 
-  const { dossier, dossierId: rawDossierId, prisesEnCharge = initialPrisesEnCharge, user } = context;
+  const { dossier, dossierId: rawDossierId, prisesEnCharge = mockRuntime.prisesEnCharge, user } = context;
   const targetDossierId = dossier?.id || rawDossierId;
 
   const normalizedAbility = (ability || "").toLowerCase().trim();
@@ -486,7 +490,7 @@ export function evaluatePermission(role, ability, context = {}) {
     }
     if (role === Role.CHEF_BUREAU_ADJOINT) {
       if (!targetDossierId) {
-        return { allowed: true };
+        return { allowed: false, reason: "Prise en charge requise" };
       }
       const pec = findActivePriseEnCharge(targetDossierId, user?.id, prisesEnCharge);
       if (pec && pec.portee?.affecter !== false) {
@@ -561,7 +565,7 @@ export function evaluatePermission(role, ability, context = {}) {
       return { allowed: true };
     }
     if (role === Role.CHEF_BUREAU_ADJOINT) {
-      if (!targetDossierId) return { allowed: true };
+      if (!targetDossierId) return { allowed: false, reason: "Prise en charge requise" };
       const pec = findActivePriseEnCharge(targetDossierId, user?.id, prisesEnCharge);
       if (pec && pec.portee?.imprimer !== false) {
         return { allowed: true };
@@ -687,12 +691,12 @@ export function evaluatePermission(role, ability, context = {}) {
     normalizedAbility === "accorderacces" ||
     normalizedAbility === "cangrantaccess"
   ) {
-    if (role === Role.CHEF_BUREAU || role === Role.CHEF_BUREAU_ADJOINT) {
+    if (role === Role.CHEF_BUREAU) {
       return { allowed: true };
     }
     return {
       allowed: false,
-      reason: "L'octroi d'accès exceptionnel est réservé à la direction du bureau.",
+      reason: "L'octroi d'accès est réservé au Chef de bureau.",
     };
   }
 
@@ -725,8 +729,13 @@ export function evaluatePermission(role, ability, context = {}) {
     normalizedAbility === "reouvrir_note" ||
     normalizedAbility === "canreopen"
   ) {
-    if (role === Role.CHEF_BUREAU || role === Role.CHEF_BUREAU_ADJOINT) {
+    if (role === Role.CHEF_BUREAU) {
       return { allowed: true };
+    }
+    if (role === Role.CHEF_BUREAU_ADJOINT) {
+      const pec = findActivePriseEnCharge(targetDossierId, user?.id, prisesEnCharge);
+      if (pec) return { allowed: true };
+      return { allowed: false, reason: "Prise en charge requise" };
     }
     return {
       allowed: false,
@@ -771,13 +780,13 @@ export function evaluatePermission(role, ability, context = {}) {
   // Q. Relecture de note
   // --------------------------------------------------------------------------
   if (normalizedAbility === "relire" || normalizedAbility === "relire_note") {
-    if (
-      role === Role.CHEF_BUREAU ||
-      role === Role.CHEF_BUREAU_ADJOINT ||
-      role === Role.CHEF_CELLULE ||
-      role === Role.CHEF_CELLULE_ADJOINT
-    ) {
+    if (role === Role.CHEF_BUREAU || role === Role.CHEF_CELLULE) {
       return { allowed: true };
+    }
+    if (role === Role.CHEF_BUREAU_ADJOINT || role === Role.CHEF_CELLULE_ADJOINT) {
+      const pec = findActivePriseEnCharge(targetDossierId, user?.id, prisesEnCharge);
+      if (pec) return { allowed: true };
+      return { allowed: false, reason: "Prise en charge requise" };
     }
     return {
       allowed: false,

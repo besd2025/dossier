@@ -1,5 +1,4 @@
-import { Bell } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import NotificationsClient from "./notifications-client";
 
 export const metadata = {
   title: "Notifications | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function NotificationsPage() {
-  return (
-    <PlaceholderPage
-      title="Centre de notifications"
-      description="Historique des alertes d'échéances, affectations de dossiers, validations et retours du cabinet."
-      breadcrumb={[{ label: "Communication" }, { label: "Notifications" }]}
-      icon={Bell}
-      code="ECR-13"
-    />
-  );
+  return <NotificationsClient />;
 }
-

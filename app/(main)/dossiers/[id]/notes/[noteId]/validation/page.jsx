@@ -1,5 +1,6 @@
-import { ShieldCheck } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { notFound } from "next/navigation";
+import ValidationClient from "./validation-client";
+import { getNote } from "@/lib/services/notes-service";
 
 export const metadata = {
   title: "Validation de la note | BESD",
@@ -8,20 +9,8 @@ export const metadata = {
 
 export default async function ValidationNotePage({ params }) {
   const { id, noteId } = await params;
+  const note = await getNote(noteId);
+  if (!note || note.dossierId !== id) notFound();
 
-  return (
-    <PlaceholderPage
-      title={`Validation de la note n° ${noteId} — Dossier ${id}`}
-      description="Validation finale ou demande de corrections avant impression et passage en circuit de signature."
-      breadcrumb={[
-        { label: "Dossiers", href: "/dossiers" },
-        { label: `Dossier ${id}`, href: `/dossiers/${id}` },
-        { label: `Note ${noteId}`, href: `/dossiers/${id}/notes/${noteId}` },
-        { label: "Validation" },
-      ]}
-      icon={ShieldCheck}
-      code="ECR-06"
-    />
-  );
+  return <ValidationClient initialNote={note} dossierId={id} />;
 }
-

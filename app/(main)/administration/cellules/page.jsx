@@ -1,5 +1,4 @@
-import { Building2 } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { CellulesPage as CellulesView } from "@/components/admin/admin-pages";
 
 export const metadata = {
   title: "Cellules | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function CellulesPage() {
-  return (
-    <PlaceholderPage
-      title="Cellules du bureau"
-      description="Configuration des cellules fonctionnelles, désignation des chefs et adjoints de cellule."
-      breadcrumb={[{ label: "Administration" }, { label: "Cellules" }]}
-      icon={Building2}
-      code="ECR-17"
-    />
-  );
+  return <CellulesView />;
 }
-

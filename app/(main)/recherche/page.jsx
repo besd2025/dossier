@@ -1,5 +1,4 @@
-import { Search } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import RechercheClient from "./recherche-client";
 
 export const metadata = {
   title: "Recherche intelligente | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function RecherchePage() {
-  return (
-    <PlaceholderPage
-      title="Recherche intelligente"
-      description="Recherche multicritère avancée (numéro, référence, date d'enregistrement, mot-clé, rédacteur, statut)."
-      breadcrumb={[{ label: "Pilotage" }, { label: "Recherche" }]}
-      icon={Search}
-      code="ECR-14"
-    />
-  );
+  return <RechercheClient />;
 }
-

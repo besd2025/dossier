@@ -122,6 +122,7 @@ Rôles (fixes) : `SECRETARIAT`, `CHEF_BUREAU`, `CHEF_BUREAU_ADJOINT`, `CHEF_CELL
 - **Base** : écran d'authentification du template (garder une seule variante).
 - Champs : email, mot de passe, « se souvenir de moi ». Pas d'inscription, pas de réseaux sociaux. Lien « Mot de passe oublié » (écran factice).
 - Texte d'en-tête : « Application de gestion des dossiers du BESD ».
+- **Simulation** : la connexion accepte l'email d'un des 8 comptes de démonstration (mot de passe quelconque), charge ce compte dans `useSessionStore` et redirige vers `/dashboard`. Menu utilisateur : *Profil*, *Déconnexion*. Une route protégée sans session redirige vers `/auth/login`.
 
 ### 4.2 Tableau de bord — `/dashboard`
 - **Base** : Dashboard Default (+ Productivity pour la version conseiller). Même logique, **données filtrées selon le rôle** (4.9).
@@ -177,8 +178,17 @@ Rôles (fixes) : `SECRETARIAT`, `CHEF_BUREAU`, `CHEF_BUREAU_ADJOINT`, `CHEF_CELL
 
 ### 4.7 Mes dossiers à traiter — `/mes-dossiers`
 - **Base** : page Tasks du template (table + filtres), éventuellement vue Kanban en phase 2.
-- Colonnes : dossier, note, statut de la note, prochaine action, échéance/jours sans avancement, observations non résolues.
-- Raccourcis : « Déposer une version », « Voir les observations ».
+- **Public** : toute personne qui traite un dossier : conseiller, conseiller hors cellule, chef de cellule ou Chef de bureau lorsqu'ils traitent eux-mêmes, comptable lorsqu'une note lui est confiée, adjoint **uniquement** pour les dossiers dont il a la prise en charge.
+- **Cartes de synthèse** (en tête) : dossiers à rédiger, en relecture, à corriger (observations), en retard.
+- **Onglets** :
+  1. *À rédiger* : dossiers assignés sans note déposée, ou note au statut brouillon.
+  2. *À corriger* : notes renvoyées avec observations non résolues.
+  3. *En relecture* : notes que j'ai soumises, avec l'étape où elles se trouvent (cellule / bureau).
+  4. *Terminés* : notes validées, signées ou transmises dont je suis le rédacteur.
+- **Colonnes** : référence du dossier, objet, type de document, statut de la note (badge), prochaine action, assigné par et date, jours sans avancement (OverdueIndicator), observations non résolues (compteur).
+- **Filtres** : statut de la note, cellule, instruction du cabinet, en retard seulement, recherche.
+- **Actions rapides par ligne** : *Ouvrir le dossier*, *Déposer une version*, *Voir les observations*.
+- État vide : « Aucun dossier ne vous est assigné pour le moment ».
 
 ### 4.8 Détail d'une note — `/dossiers/[id]/notes/[noteId]`
 Cœur du circuit de relecture (3.3). **Pas d'édition en ligne** : téléchargement / dépôt de fichiers Word.
@@ -273,6 +283,27 @@ Reprend la maquette 9.3.
 
 ### 4.23 Profil — `/profil`
 - **Base** : Profile. Identité, rôle, cellule, changement de mot de passe (factice), préférences d'affichage (thème, layout).
+
+### 4.24 Notes à relire / valider — `/relectures`
+Écran de travail des relecteurs (3.3). Il liste les notes **qui attendent une action de la personne connectée**.
+- **Public et contenu selon le rôle** :
+  - *Chef de cellule* (et adjoint avec prise en charge) : notes de sa cellule au statut « en relecture (cellule) ».
+  - *Chef de bureau* (et adjoint avec prise en charge) : notes au statut « en relecture (bureau) » ; pour la cellule CASEAG, mention de la délégation de correction.
+  - L'adjoint voit la liste en lecture, mais ses boutons d'action sont **désactivés avec infobulle « Prise en charge requise »** s'il n'a pas la prise en charge du dossier.
+- **Cartes de synthèse** : à relire, en retard (> 7 jours), renvoyées au rédacteur, relues cette semaine.
+- **Onglets** :
+  1. *À relire* : notes en attente de mon action.
+  2. *Renvoyées en observation* : notes que j'ai renvoyées, en attente du rédacteur (avec date et nombre d'observations).
+  3. *Traitées récemment* : notes que j'ai transmises à l'étape suivante ou validées.
+- **Colonnes** : référence du dossier, objet, type de document, destinataire, rédacteur, cellule, numéro de version courante, déposée par et le (date), jours en attente, observations non résolues.
+- **Filtres** : cellule, rédacteur, type de document, en retard seulement, recherche.
+- **Actions par ligne** :
+  - *Ouvrir la note* (vers `/dossiers/[id]/notes/[noteId]`) ;
+  - *Télécharger la dernière version* ;
+  - chef de cellule : *Envoyer au Chef de bureau* ou *Renvoyer au rédacteur* (motif obligatoire) ;
+  - Chef de bureau : *Ouvrir la validation* (vers l'écran 4.9) ou *Renvoyer en observation* (motif obligatoire).
+- Les actions de masse ne sont pas prévues : chaque note est relue individuellement.
+- État vide : « Aucune note n'attend votre relecture ».
 
 ---
 

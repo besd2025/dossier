@@ -1,5 +1,4 @@
-import { Undo2 } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import RetoursCabinetClient from "./retours-cabinet-client";
 
 export const metadata = {
   title: "Retours du cabinet | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function RetoursCabinetPage() {
-  return (
-    <PlaceholderPage
-      title="Retours du cabinet"
-      description="Historique et enregistrement des décisions, annotations et retours émanant du cabinet du ministre."
-      breadcrumb={[{ label: "Secrétariat" }, { label: "Retours du cabinet" }]}
-      icon={Undo2}
-      code="ECR-12"
-    />
-  );
+  return <RetoursCabinetClient />;
 }
-

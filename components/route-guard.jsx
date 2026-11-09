@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { canAccessRoute } from "@/config/permissions";
 import { useSessionStore } from "@/stores/session/session-store";
@@ -16,12 +16,23 @@ const emptySubscribe = () => () => {};
  */
 export function RouteGuard({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const mounted = React.useSyncExternalStore(emptySubscribe, () => true, () => false);
   const currentRole = useSessionStore((s) => s.role);
+  const isAuthenticated = useSessionStore((s) => s.isAuthenticated);
 
-  // Pendant l'hydratation initiale, rendre les enfants sans flash
-  if (!mounted) {
-    return <>{children}</>;
+  React.useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      router.replace("/auth/login");
+    }
+  }, [isAuthenticated, mounted, router]);
+
+  if (!mounted || !isAuthenticated) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center" role="status">
+        <span className="text-sm text-muted-foreground">Vérification de la session…</span>
+      </div>
+    );
   }
 
   const isAllowed = canAccessRoute(currentRole, pathname);

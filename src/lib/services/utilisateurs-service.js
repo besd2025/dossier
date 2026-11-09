@@ -1,6 +1,5 @@
-import { initialUtilisateurs } from "@/lib/mock";
-
-let utilisateurs = [...initialUtilisateurs];
+import { mockRuntime } from "@/lib/mock/runtime-state";
+import { Role, TypeMouvement } from "@/types";
 
 const delay = (ms = 70) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -14,7 +13,7 @@ const delay = (ms = 70) => new Promise((resolve) => setTimeout(resolve, ms));
  */
 export async function getUtilisateurs(filters = {}) {
   await delay(60);
-  let result = [...utilisateurs];
+  let result = [...mockRuntime.utilisateurs];
 
   if (filters.role) {
     result = result.filter((u) => u.role === filters.role);
@@ -45,7 +44,15 @@ export async function getUtilisateurs(filters = {}) {
  */
 export async function getUtilisateur(id) {
   await delay(40);
-  return utilisateurs.find((u) => u.id === id) || null;
+  return mockRuntime.utilisateurs.find((u) => u.id === id) || null;
+}
+
+export async function updateUtilisateur(id, updates) {
+  await delay(60);
+  const index = mockRuntime.utilisateurs.findIndex((user) => user.id === id);
+  if (index === -1) throw new Error("Utilisateur introuvable.");
+  mockRuntime.utilisateurs[index] = { ...mockRuntime.utilisateurs[index], ...updates };
+  return mockRuntime.utilisateurs[index];
 }
 
 /**
@@ -57,7 +64,10 @@ export async function getUtilisateur(id) {
 export async function createUtilisateur(userData, auteurId = "usr-01") {
   await delay(90);
 
-  const nextIndex = utilisateurs.length + 1;
+  const nextIndex = mockRuntime.utilisateurs.reduce((max, user) => {
+    const index = Number(user.id.match(/\d+$/)?.[0] || 0);
+    return Math.max(max, index);
+  }, 0) + 1;
   const newId = `usr-${String(nextIndex).padStart(2, "0")}`;
 
   const newUser = {
@@ -73,7 +83,29 @@ export async function createUtilisateur(userData, auteurId = "usr-01") {
     dateCreation: new Date().toISOString(),
   };
 
-  utilisateurs = [...utilisateurs, newUser];
+  mockRuntime.utilisateurs.push(newUser);
+  const creator = mockRuntime.utilisateurs.find((user) => user.id === auteurId);
+  mockRuntime.mouvements.unshift({
+    id: `mvt-${Date.now()}`,
+    dossierId: null,
+    compteConcerneId: newUser.id,
+    date: newUser.dateCreation,
+    auteurId,
+    typeMouvement: TypeMouvement.CREATION_COMPTE,
+    description: `Création du compte de ${newUser.prenom} ${newUser.nom} (${newUser.role}).`,
+  });
+  if (creator?.role !== Role.CHEF_BUREAU) {
+    mockRuntime.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      destinataireId: "usr-01",
+      message: `Un nouveau compte a été créé par ${creator ? `${creator.prenom} ${creator.nom}` : auteurId} : ${newUser.prenom} ${newUser.nom}.`,
+      dossierId: null,
+      date: newUser.dateCreation,
+      canal: "APPLICATION",
+      lue: false,
+      type: "CREATION_COMPTE",
+    });
+  }
   return newUser;
 }
 
@@ -84,14 +116,13 @@ export async function createUtilisateur(userData, auteurId = "usr-01") {
  */
 export async function toggleUtilisateurActif(id) {
   await delay(60);
-  const index = utilisateurs.findIndex((u) => u.id === id);
+  const index = mockRuntime.utilisateurs.findIndex((u) => u.id === id);
   if (index === -1) throw new Error("Utilisateur introuvable");
 
-  utilisateurs[index] = {
-    ...utilisateurs[index],
-    actif: !utilisateurs[index].actif,
+  mockRuntime.utilisateurs[index] = {
+    ...mockRuntime.utilisateurs[index],
+    actif: !mockRuntime.utilisateurs[index].actif,
   };
 
-  return utilisateurs[index];
+  return mockRuntime.utilisateurs[index];
 }
-

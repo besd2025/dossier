@@ -1,5 +1,4 @@
-import { PenTool } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import SignaturesClient from "./signatures-client";
 
 export const metadata = {
   title: "Circuit de signature | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function SignaturesPage() {
-  return (
-    <PlaceholderPage
-      title="Circuit de signature"
-      description="Suivi de l'impression physique des notes, de la mise en parapheur et de la signature par l'autorité."
-      breadcrumb={[{ label: "Dossiers", href: "/dossiers" }, { label: "Circuit de signature" }]}
-      icon={PenTool}
-      code="ECR-10"
-    />
-  );
+  return <SignaturesClient />;
 }
-

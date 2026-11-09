@@ -74,6 +74,13 @@ export function SearchDialog() {
     router.push(item.url);
   };
 
+  const searchDocuments = () => {
+    const value = query.trim();
+    if (!value) return;
+    handleOpenChange(false);
+    router.push(`/recherche?q=${encodeURIComponent(value)}`);
+  };
+
   const filteredItems = query
     ? searchItems.filter(
         (item) =>
@@ -102,12 +109,23 @@ export function SearchDialog() {
       <CommandDialog open={open} onOpenChange={handleOpenChange}>
         <Command>
           <CommandInput
-            placeholder="Rechercher une section, un écran..."
+            placeholder="Rechercher un dossier ou un écran..."
             value={query}
             onValueChange={setQuery}
           />
           <CommandList>
             <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
+            {query.trim() && (
+              <CommandGroup heading="Dossiers et notes">
+                <CommandItem
+                  value={`rechercher dans les dossiers ${query}`}
+                  onSelect={searchDocuments}
+                >
+                  <Search className="size-4" />
+                  <span>Rechercher « {query.trim()} » dans les dossiers et notes</span>
+                </CommandItem>
+              </CommandGroup>
+            )}
             {grouped.map(({ group, items: groupItems }, index) => (
               <React.Fragment key={group}>
                 {index > 0 && <CommandSeparator />}
@@ -136,4 +154,3 @@ export function SearchDialog() {
     </>
   );
 }
-

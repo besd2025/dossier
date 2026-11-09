@@ -1,5 +1,4 @@
-import { KeyRound } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { AccesExceptionnelsPage as AccesExceptionnelsView } from "@/components/admin/admin-pages";
 
 export const metadata = {
   title: "Accès exceptionnels | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function AccesExceptionnelsPage() {
-  return (
-    <PlaceholderPage
-      title="Accès exceptionnels"
-      description="Gestion des autorisations ponctuelles de consultation et de traitement accordées hors cellule."
-      breadcrumb={[{ label: "Administration" }, { label: "Accès exceptionnels" }]}
-      icon={KeyRound}
-      code="ECR-19"
-    />
-  );
+  return <AccesExceptionnelsView />;
 }
-

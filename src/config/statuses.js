@@ -14,6 +14,7 @@ import {
   Printer,
   RotateCcw,
   Send,
+  Stamp,
 } from "lucide-react";
 import { StatutDossier, StatutNote } from "@/types";
 
@@ -143,7 +144,7 @@ export const STATUT_NOTE_CONFIG = Object.freeze({
     badgeClass: "border-orange-500/20 bg-orange-500/10 text-orange-700 dark:text-orange-300",
     dotClass: "bg-orange-500",
     icon: FileSpreadsheet,
-    stepIndex: 5,
+    stepIndex: 4,
     description: "Sortie papier réalisée, intégrée au circuit parapheur",
   },
   [StatutNote.SIGNEE]: {
@@ -152,7 +153,7 @@ export const STATUT_NOTE_CONFIG = Object.freeze({
     badgeClass: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
     dotClass: "bg-emerald-600",
     icon: PenTool,
-    stepIndex: 6,
+    stepIndex: 5,
     description: "Signée physiquement par l'autorité compétente",
   },
   [StatutNote.TRANSMISE]: {
@@ -163,6 +164,15 @@ export const STATUT_NOTE_CONFIG = Object.freeze({
     icon: Send,
     stepIndex: 7,
     description: "Cachet officiel apposé et transmise au cabinet / destinataire",
+  },
+  CACHETEE: {
+    id: "CACHETEE",
+    label: "Cachetée",
+    badgeClass: "border-teal-500/20 bg-teal-500/10 text-teal-700 dark:text-teal-300",
+    dotClass: "bg-teal-600",
+    icon: Stamp,
+    stepIndex: 6,
+    description: "Cachet officiel apposé sur la note signée",
   },
   [StatutNote.ROUVERTE]: {
     id: StatutNote.ROUVERTE,

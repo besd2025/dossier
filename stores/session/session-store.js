@@ -1,72 +1,106 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { DEMO_ACCOUNTS, Role } from "@/config/permissions";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { DEMO_ACCOUNTS } from "@/config/permissions";
 
-const DEFAULT_ACCOUNT = DEMO_ACCOUNTS[0]; // Chef de bureau (Colonel Alexandre Martin)
+const browserSessionStorage = {
+  getItem(name) {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem(name) || window.sessionStorage.getItem(name);
+  },
+  setItem(name, value) {
+    if (typeof window === "undefined") return;
+    const stored = JSON.parse(value);
+    if (!stored.state?.isAuthenticated) {
+      window.localStorage.removeItem(name);
+      window.sessionStorage.removeItem(name);
+      return;
+    }
+    if (stored.state.rememberMe) {
+      window.localStorage.setItem(name, value);
+      window.sessionStorage.removeItem(name);
+    } else {
+      window.sessionStorage.setItem(name, value);
+      window.localStorage.removeItem(name);
+    }
+  },
+  removeItem(name) {
+    if (typeof window === "undefined") return;
+    window.localStorage.removeItem(name);
+    window.sessionStorage.removeItem(name);
+  },
+};
+
+const initialState = {
+  role: null,
+  user: null,
+  currentUser: null,
+  isAuthenticated: false,
+  rememberMe: false,
+};
 
 export const useSessionStore = create(
   persist(
     (set, get) => ({
-      role: DEFAULT_ACCOUNT.role,
-      user: DEFAULT_ACCOUNT.user,
-      currentUser: DEFAULT_ACCOUNT.user,
-
-      /**
-       * Bascule vers l'un des 8 rôles/comptes de démonstration
-       * @param {string} newRole
-       */
-      setRole: (newRole) => {
-        const account = DEMO_ACCOUNTS.find((a) => a.role === newRole) || DEMO_ACCOUNTS[0];
+      ...initialState,
+      login: (user, rememberMe = false) => {
+        if (!user?.id || !user?.role) {
+          throw new Error("Un compte utilisateur valide est nécessaire.");
+        }
         set({
-          role: account.role,
-          user: account.user,
-          currentUser: account.user,
+          role: user.role,
+          user,
+          currentUser: user,
+          isAuthenticated: true,
+          rememberMe: Boolean(rememberMe),
         });
       },
-
-      /**
-       * Définit explicitement l'utilisateur courant
-       * @param {Object} user
-       */
+      setRole: (newRole) => {
+        const account = DEMO_ACCOUNTS.find((item) => item.role === newRole);
+        if (!account) return;
+        const currentUser = get().user;
+        const user = currentUser?.role === newRole
+          ? currentUser
+          : account.user;
+        set({
+          role: account.role,
+          user,
+          currentUser: user,
+          isAuthenticated: true,
+        });
+      },
       setUser: (user) => {
         if (!user) return;
         set({
           user,
           currentUser: user,
           role: user.role || get().role,
+          isAuthenticated: true,
         });
       },
-
-      /**
-       * Met à jour les informations du profil utilisateur
-       * @param {Object} updates
-       */
       updateUser: (updates) => {
         set((state) => {
-          const updated = {
-            ...state.user,
-            ...updates,
-          };
+          if (!state.user) return state;
+          const updated = { ...state.user, ...updates };
           return {
             user: updated,
             currentUser: updated,
+            role: updated.role || state.role,
           };
         });
       },
-
-      /**
-       * Réinitialise la session au profil par défaut
-       */
-      resetSession: () => {
-        set({
-          role: DEFAULT_ACCOUNT.role,
-          user: DEFAULT_ACCOUNT.user,
-          currentUser: DEFAULT_ACCOUNT.user,
-        });
-      },
+      logout: () => set({ ...initialState }),
+      resetSession: () => set({ ...initialState }),
     }),
     {
       name: "besd_session_storage",
-    }
-  )
+      storage: createJSONStorage(() => browserSessionStorage),
+      partialize: (state) => ({
+        role: state.role,
+        user: state.user,
+        currentUser: state.currentUser,
+        isAuthenticated: state.isAuthenticated,
+        rememberMe: state.rememberMe,
+      }),
+    },
+  ),
 );

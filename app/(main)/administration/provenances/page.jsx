@@ -1,5 +1,4 @@
-import { Landmark } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { ProvenancesPage as ProvenancesView } from "@/components/admin/admin-pages";
 
 export const metadata = {
   title: "Provenances | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function ProvenancesPage() {
-  return (
-    <PlaceholderPage
-      title="Référentiel des provenances"
-      description="Gestion des autorités, états-majors, directions et organismes expéditeurs des dossiers entrants."
-      breadcrumb={[{ label: "Administration" }, { label: "Provenances" }]}
-      icon={Landmark}
-      code="ECR-18"
-    />
-  );
+  return <ProvenancesView />;
 }
-

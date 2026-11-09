@@ -8,7 +8,6 @@ import { AppLogo } from "@/components/app-logo";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -21,7 +20,6 @@ import { usePreferencesStore } from "@/stores/preferences/preferences-provider";
 import { useSessionStore } from "@/stores/session/session-store";
 
 import { NavMain } from "./nav-main";
-import { NavUser } from "./nav-user";
 
 export function AppSidebar({ ...props }) {
   const currentRole = useSessionStore((s) => s.role);
@@ -64,10 +62,6 @@ export function AppSidebar({ ...props }) {
       <SidebarContent>
         <NavMain items={filteredNavItems} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser />
-      </SidebarFooter>
     </Sidebar>
   );
 }
-

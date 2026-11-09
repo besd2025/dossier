@@ -1,5 +1,4 @@
-import { FileCheck2 } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import RelecturesClient from "./relectures-client";
 
 export const metadata = {
   title: "Notes à relire / valider | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function RelecturesPage() {
-  return (
-    <PlaceholderPage
-      title="Notes à relire / valider"
-      description="File d'attente des projets de note soumis par les rédacteurs pour relecture intermédiaire ou validation."
-      breadcrumb={[{ label: "Dossiers", href: "/dossiers" }, { label: "Relectures" }]}
-      icon={FileCheck2}
-      code="ECR-09"
-    />
-  );
+  return <RelecturesClient />;
 }
-

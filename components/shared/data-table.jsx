@@ -209,7 +209,7 @@ export function DataTable({
             {/* Menu de visibilité des colonnes */}
             {showColumnVisibility && (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger asChild nativeButton>
                   <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
                     <Columns3 className="size-3.5" />
                     <span>Colonnes</span>
@@ -418,4 +418,3 @@ export function DataTable({
 }
 
 export default DataTable;
-

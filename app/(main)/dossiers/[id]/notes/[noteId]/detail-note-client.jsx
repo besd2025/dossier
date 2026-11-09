@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Check,
@@ -16,11 +17,13 @@ import { toast } from "sonner";
 
 import {
   ObservationThread,
+  ReopenedBanner,
   StatusBadge,
   VersionDropzone,
   VersionList,
   WorkflowStepper,
 } from "@/components/shared";
+import { PermissionGate } from "@/components/permission-gate";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -42,7 +45,9 @@ import {
   createNoteVersion,
   createObservation,
   getNote,
+  reouvrirNote,
   resolveObservation,
+  transitionNoteWithObservation,
   updateNoteKeywords,
   updateNoteStatus,
 } from "@/lib/services/notes-service";
@@ -109,11 +114,16 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
   const [isWorking, setIsWorking] = useState(false);
   const [dialogAction, setDialogAction] = useState(null);
   const [dialogComment, setDialogComment] = useState("");
+  const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
+  const [reopenReason, setReopenReason] = useState("");
+  const [reopenAuthority, setReopenAuthority] = useState("Chef de bureau");
+  const [reopenDate, setReopenDate] = useState(new Date().toISOString().slice(0, 10));
   const [versionNotice, setVersionNotice] = useState("");
+  const router = useRouter();
   const { role, currentUser } = useSessionStore();
   const user = currentUser || {};
 
-  const isDraft = [StatutNote.BROUILLON, StatutNote.ROUVERTE].includes(note.statutNote);
+  const isDraft = note.statutNote === StatutNote.BROUILLON;
   const isWriter = user.id === note.redacteurId;
   const isCellReviewer =
     role === Role.CHEF_CELLULE &&
@@ -136,6 +146,8 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
     (cell) => cell.code === "CASEAG" && cell.delegationCorrection
   );
   const noteStatus = note.statutNote;
+  const canReopen = noteStatus === StatutNote.SIGNEE && !note.estRouverte &&
+    [Role.CHEF_BUREAU, Role.CHEF_BUREAU_ADJOINT].includes(role);
 
   const workflowHistory = useMemo(() => note.workflowHistory || {}, [note.workflowHistory]);
 
@@ -215,12 +227,12 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
     const nextStatus = isReturn ? StatutNote.BROUILLON : StatutNote.RELECTURE_CELLULE;
     setIsWorking(true);
     try {
-      await createObservation(
+      await transitionNoteWithObservation(
         note.id,
-        { contenu: dialogComment.trim(), notify: false, recordMovement: false },
+        nextStatus,
+        dialogComment.trim(),
         user.id
       );
-      await updateNoteStatus(note.id, nextStatus, user.id);
       await refreshNote();
       toast.success(
         isReturn
@@ -252,6 +264,26 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
       await refreshNote();
     } catch (error) {
       toast.error(error.message || "L'observation n'a pas pu être mise à jour.");
+    }
+  }
+
+  async function handleReopen() {
+    if (!reopenReason.trim() || !reopenAuthority.trim() || !reopenDate || isWorking) return;
+    setIsWorking(true);
+    try {
+      const result = await reouvrirNote(
+        note.id,
+        { motif: reopenReason, autorisePar: reopenAuthority, date: reopenDate },
+        user.id
+      );
+      await refreshNote();
+      toast.success("La note signée a été conservée et un nouveau cycle de rédaction a été ouvert.");
+      setReopenDialogOpen(false);
+      router.push(`/dossiers/${dossierId}/notes/${result.newNote.id}`);
+    } catch (error) {
+      toast.error(error.message || "La réouverture n'a pas pu être enregistrée.");
+    } finally {
+      setIsWorking(false);
     }
   }
 
@@ -310,32 +342,13 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
         </CardContent>
       </Card>
 
-      {note.statutNote === StatutNote.ROUVERTE && (
-        <section
-          aria-label="Note rouverte"
-          className="flex flex-col gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div>
-            <p className="font-semibold text-destructive">Note rouverte après signature</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {note.reouverture?.motif || "Une correction a été autorisée après signature."}
-            </p>
-          </div>
-          {originalSignedVersion ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fakeDocxDownload(originalSignedVersion)}
-            >
-              <Download className="size-4" />
-              Télécharger la version signée d&apos;origine
-            </Button>
-          ) : (
-            <span className="text-sm text-muted-foreground">
-              La version signée d&apos;origine n&apos;est pas disponible.
-            </span>
-          )}
-        </section>
+      {(note.estRouverte || note.reouverture) && (
+        <ReopenedBanner
+          note={note}
+          onViewOriginalVersion={
+            originalSignedVersion ? () => fakeDocxDownload(originalSignedVersion) : undefined
+          }
+        />
       )}
 
       <Card>
@@ -380,7 +393,7 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="versions">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <FileText className="size-4 text-primary" />
@@ -425,7 +438,7 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
         </div>
 
         <div className="space-y-5">
-          <Card>
+          <Card id="observations">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <MessageSquareText className="size-4 text-primary" />
@@ -525,9 +538,26 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
                   </Button>
                 </>
               )}
+              {canReopen && (
+                <PermissionGate
+                  ability="reouvrir"
+                  context={{ dossierId: note.dossierId }}
+                  tooltip="La réouverture après signature est réservée au Chef de bureau et à son adjoint."
+                >
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={isWorking}
+                    onClick={() => setReopenDialogOpen(true)}
+                  >
+                    Réouvrir après signature
+                  </Button>
+                </PermissionGate>
+              )}
               {!canWrite &&
                 !(isCellReviewer && noteStatus === StatutNote.RELECTURE_CELLULE) &&
-                !(isOfficeReviewer && noteStatus === StatutNote.RELECTURE_BUREAU) && (
+                !(isOfficeReviewer && noteStatus === StatutNote.RELECTURE_BUREAU) &&
+                !canReopen && (
                   <p className="text-sm text-muted-foreground">
                     Aucune action n&apos;est disponible pour votre rôle à cette étape.
                   </p>
@@ -587,6 +617,89 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
               onClick={handleDialogConfirm}
             >
               Confirmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={reopenDialogOpen}
+        onOpenChange={(open) => {
+          if (!isWorking) setReopenDialogOpen(open);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Réouvrir la note signée</DialogTitle>
+            <DialogDescription>
+              Cette procédure exceptionnelle conserve la note signée d’origine et ouvre une nouvelle note.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="reopen-reason" className="text-sm font-medium">
+                Motif obligatoire
+              </label>
+              <textarea
+                id="reopen-reason"
+                value={reopenReason}
+                onChange={(event) => setReopenReason(event.target.value)}
+                rows={4}
+                required
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="reopen-authority" className="text-sm font-medium">
+                  Autorité ayant autorisé
+                </label>
+                <select
+                  id="reopen-authority"
+                  value={reopenAuthority}
+                  onChange={(event) => setReopenAuthority(event.target.value)}
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  required
+                >
+                  <option value="Chef de bureau">Chef de bureau</option>
+                  <option value="Directeur de cabinet">Directeur de cabinet</option>
+                  <option value="Chef d’état-major">Chef d’état-major</option>
+                  <option value="Autre autorité">Autre autorité</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="reopen-date" className="text-sm font-medium">Date</label>
+                <input
+                  id="reopen-date"
+                  type="date"
+                  value={reopenDate}
+                  onChange={(event) => setReopenDate(event.target.value)}
+                  required
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
+              <p>La version signée d&apos;origine est conservée.</p>
+              <p>La nouvelle note aura son propre circuit de validation, sa signature, son numéro et sa date.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isWorking}
+              onClick={() => setReopenDialogOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={!reopenReason.trim() || !reopenAuthority.trim() || !reopenDate || isWorking}
+              onClick={handleReopen}
+            >
+              Confirmer la réouverture
             </Button>
           </DialogFooter>
         </DialogContent>

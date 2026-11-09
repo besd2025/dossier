@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -28,15 +29,10 @@ export function RoleSwitcher() {
   const mounted = React.useSyncExternalStore(emptySubscribe, () => true, () => false);
   const currentRole = useSessionStore((s) => s.role);
   const currentUser = useSessionStore((s) => s.user);
+  const isAuthenticated = useSessionStore((s) => s.isAuthenticated);
   const setRole = useSessionStore((s) => s.setRole);
 
-  // Visible uniquement en mode développement (consigne 5)
-  // Une clé de contournement 'besd_force_role_switcher' permet l'affichage en prévisualisation de production si besoin
-  const isDev =
-    process.env.NODE_ENV === "development" ||
-    (typeof window !== "undefined" && window.localStorage?.getItem("besd_force_role_switcher") === "true");
-
-  if (!isDev) {
+  if (process.env.NODE_ENV !== "development" || !isAuthenticated) {
     return null;
   }
 
@@ -50,8 +46,8 @@ export function RoleSwitcher() {
     );
   }
 
-  const activeAccount =
-    DEMO_ACCOUNTS.find((acc) => acc.role === currentRole) || DEMO_ACCOUNTS[0];
+  const activeAccount = DEMO_ACCOUNTS.find((acc) => acc.role === currentRole);
+  if (!activeAccount) return null;
 
   return (
     <DropdownMenu>
@@ -79,18 +75,20 @@ export function RoleSwitcher() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-80 p-1.5">
-        <DropdownMenuLabel className="flex items-center justify-between text-xs font-semibold px-2 py-1.5">
-          <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-            <ShieldAlert className="size-4 shrink-0" />
-            <span>Profils simulés (8 comptes de démo)</span>
-          </div>
-          <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5">
-            Zustand
-          </Badge>
-        </DropdownMenuLabel>
-        <p className="text-[11px] text-muted-foreground px-2 pb-2 leading-relaxed">
-          Basculez de rôle pour tester instantanément le filtrage de la navigation et les droits d&apos;action.
-        </p>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex items-center justify-between px-2 py-1.5 text-xs font-semibold">
+            <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+              <ShieldAlert className="size-4 shrink-0" />
+              <span>Profils simulés (8 comptes de démo)</span>
+            </div>
+            <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5">
+              Zustand
+            </Badge>
+          </DropdownMenuLabel>
+          <p className="px-2 pb-2 text-[11px] leading-relaxed text-muted-foreground">
+            Basculez de rôle pour tester instantanément le filtrage de la navigation et les droits d&apos;action.
+          </p>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
 
         <div className="max-h-[360px] overflow-y-auto py-0.5 space-y-0.5">

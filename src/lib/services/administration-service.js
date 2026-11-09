@@ -1,14 +1,6 @@
-import {
-  initialAccesExceptionnels,
-  initialCellules,
-  initialProvenances,
-} from "@/lib/mock";
 import { mockRuntime } from "@/lib/mock/runtime-state";
-import { TypeMouvement } from "@/types";
+import { Role, TypeMouvement } from "@/types";
 
-let cellules = [...initialCellules];
-let provenances = [...initialProvenances];
-let accesExceptionnels = [...initialAccesExceptionnels];
 const prisesEnCharge = mockRuntime.prisesEnCharge;
 const notifications = mockRuntime.notifications;
 const mouvements = mockRuntime.mouvements;
@@ -20,29 +12,41 @@ const delay = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
 // ============================================================================
 export async function getCellules() {
   await delay(50);
-  return [...cellules];
+  return [...mockRuntime.cellules];
 }
 
 export async function getCellule(id) {
   await delay(40);
-  return cellules.find((c) => c.id === id) || null;
+  return mockRuntime.cellules.find((c) => c.id === id) || null;
 }
 
 export async function createCellule(data) {
   await delay(80);
-  const nextId = `cel-${String(cellules.length + 1).padStart(2, "0")}`;
+  const nextId = `cel-${String(mockRuntime.cellules.length + 1).padStart(2, "0")}`;
   const newCellule = {
     id: nextId,
     nom: data.nom,
-    code: data.code || `CEL_${cellules.length + 1}`,
+    code: data.code || `CEL_${mockRuntime.cellules.length + 1}`,
     chefId: data.chefId || null,
     chefAdjointId: data.chefAdjointId || null,
     conseillerAttitreId: data.conseillerAttitreId || null,
     delegationCorrection: Boolean(data.delegationCorrection),
     description: data.description || "",
   };
-  cellules = [...cellules, newCellule];
+  mockRuntime.cellules.push(newCellule);
   return newCellule;
+}
+
+export async function updateCellule(id, data) {
+  await delay(70);
+  const index = mockRuntime.cellules.findIndex((cellule) => cellule.id === id);
+  if (index === -1) throw new Error("Cellule introuvable.");
+  mockRuntime.cellules[index] = {
+    ...mockRuntime.cellules[index],
+    ...data,
+    delegationCorrection: Boolean(data.delegationCorrection),
+  };
+  return mockRuntime.cellules[index];
 }
 
 // ============================================================================
@@ -50,20 +54,28 @@ export async function createCellule(data) {
 // ============================================================================
 export async function getProvenances() {
   await delay(50);
-  return [...provenances];
+  return [...mockRuntime.provenances];
 }
 
 export async function createProvenance(data) {
   await delay(70);
-  const nextId = `prov-${String(provenances.length + 1).padStart(2, "0")}`;
+  const nextId = `prov-${String(mockRuntime.provenances.length + 1).padStart(2, "0")}`;
   const newProv = {
     id: nextId,
     nom: data.nom,
     categorie: data.categorie || "INSTITUTION",
     actif: true,
   };
-  provenances = [...provenances, newProv];
+  mockRuntime.provenances.push(newProv);
   return newProv;
+}
+
+export async function updateProvenance(id, data) {
+  await delay(60);
+  const index = mockRuntime.provenances.findIndex((provenance) => provenance.id === id);
+  if (index === -1) throw new Error("Provenance introuvable.");
+  mockRuntime.provenances[index] = { ...mockRuntime.provenances[index], ...data };
+  return mockRuntime.provenances[index];
 }
 
 // ============================================================================
@@ -71,7 +83,7 @@ export async function createProvenance(data) {
 // ============================================================================
 export async function getAcces(filters = {}) {
   await delay(60);
-  let result = [...accesExceptionnels];
+  let result = [...mockRuntime.accesExceptionnels];
   if (filters.dossierId) {
     result = result.filter((a) => a.dossierId === filters.dossierId);
   }
@@ -83,20 +95,78 @@ export async function getAcces(filters = {}) {
 
 export async function createAcces(data, auteurId = "usr-01") {
   await delay(90);
+  const author = mockRuntime.utilisateurs.find((user) => user.id === auteurId);
+  const beneficiary = mockRuntime.utilisateurs.find((user) => user.id === data.beneficiaireId);
+  const dossier = mockRuntime.dossiers.find((item) => item.id === data.dossierId);
+  if (author?.role !== Role.CHEF_BUREAU) {
+    throw new Error("Seul le Chef de bureau peut accorder un accès.");
+  }
+  if (!dossier) throw new Error("Le dossier sélectionné est introuvable.");
+  if (!beneficiary?.actif || ![Role.CONSEILLER_HORS_CELLULE, Role.COMPTABLE].includes(beneficiary.role)) {
+    throw new Error("Le bénéficiaire doit être un conseiller hors cellule ou un comptable actif.");
+  }
+  if (data.type && !["EXCEPTIONNEL", "COMPLEMENTAIRE"].includes(data.type)) {
+    throw new Error("Le type d'accès sélectionné est invalide.");
+  }
+  if (!data.motif?.trim()) throw new Error("Le motif du besoin est obligatoire.");
+  if (data.echeance && Number.isNaN(new Date(data.echeance).getTime())) {
+    throw new Error("L'échéance saisie est invalide.");
+  }
+  const dateHeure = new Date().toISOString();
   const newAcces = {
     id: `acc-${Date.now()}`,
     dossierId: data.dossierId,
     beneficiaireId: data.beneficiaireId,
     accordeParId: auteurId,
-    date: new Date().toISOString().split("T")[0],
+    date: dateHeure,
     echeance: data.echeance || null,
-    motif: data.motif || "Accès exceptionnel",
+    motif: data.motif.trim(),
     type: data.type || "EXCEPTIONNEL",
   };
-  accesExceptionnels = [newAcces, ...accesExceptionnels];
+  mockRuntime.accesExceptionnels.unshift(newAcces);
+  mockRuntime.notifications.unshift({
+    id: `notif-${Date.now()}`,
+    destinataireId: newAcces.beneficiaireId,
+    message: `Un accès ${newAcces.type.toLowerCase()} vous a été accordé au dossier ${mockRuntime.dossiers.find((dossier) => dossier.id === newAcces.dossierId)?.reference || newAcces.dossierId}.`,
+    dossierId: newAcces.dossierId,
+    date: dateHeure,
+    canal: "APPLICATION",
+    lue: false,
+    type: "ACCES_ACCORDE",
+  });
+  mouvements.unshift({
+    id: `mvt-${Date.now()}`,
+    dossierId: newAcces.dossierId,
+    date: dateHeure,
+    auteurId,
+    typeMouvement: TypeMouvement.ACCES_ACCORDE,
+    description: `Accès ${newAcces.type.toLowerCase()} accordé à ${beneficiary.prenom} ${beneficiary.nom} : ${newAcces.motif}`,
+  });
   return newAcces;
 }
 
+export async function requestDossierAccess(data, requesterId) {
+  await delay(70);
+  if (!data.dossierId || !data.motif?.trim()) {
+    throw new Error("Sélectionnez un dossier et décrivez votre besoin.");
+  }
+  const dossier = mockRuntime.dossiers.find((item) => item.id === data.dossierId);
+  const requester = mockRuntime.utilisateurs.find((item) => item.id === requesterId);
+  if (!dossier) throw new Error("Le dossier sélectionné est introuvable.");
+  if (requester?.role !== Role.CONSEILLER_HORS_CELLULE) {
+    throw new Error("La demande d'accès est réservée au conseiller hors cellule.");
+  }
+  mockRuntime.notifications.unshift({
+    id: `notif-${Date.now()}`,
+    destinataireId: "usr-01",
+    message: `${requester.prenom} ${requester.nom} demande un accès au dossier ${dossier.reference} : ${data.motif.trim()}`,
+    dossierId: dossier.id,
+    date: new Date().toISOString(),
+    canal: "APPLICATION",
+    lue: false,
+    type: "DEMANDE_ACCES",
+  });
+}
 // ============================================================================
 // PRISES EN CHARGE DES ADJOINTS
 // ============================================================================

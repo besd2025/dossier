@@ -91,8 +91,9 @@ export function PermissionGate({
           <span
             className="inline-flex cursor-not-allowed items-center"
             tabIndex={0}
-            role="button"
+            role="group"
             aria-disabled="true"
+            aria-label={tooltipMessage}
           >
             {disabledChild}
           </span>
@@ -146,4 +147,3 @@ export function usePermission(ability, context) {
     };
   }, [role, user, ability, context]);
 }
-

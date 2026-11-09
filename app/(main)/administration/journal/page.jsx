@@ -1,5 +1,4 @@
-import { History } from "lucide-react";
-import { PlaceholderPage } from "@/components/placeholder-page";
+import { JournalPage as JournalView } from "@/components/admin/admin-pages";
 
 export const metadata = {
   title: "Journal de traçabilité | BESD",
@@ -7,14 +6,5 @@ export const metadata = {
 };
 
 export default function JournalPage() {
-  return (
-    <PlaceholderPage
-      title="Journal de traçabilité"
-      description="Historique inaltérable de l'ensemble des opérations (créations, modifications, affectations, validations, suppressions)."
-      breadcrumb={[{ label: "Administration" }, { label: "Journal de traçabilité" }]}
-      icon={History}
-      code="ECR-21"
-    />
-  );
+  return <JournalView />;
 }
-
