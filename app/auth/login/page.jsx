@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowRight, Lock, Mail, ShieldCheck } from "lucide-react";
+import { ArrowRight, Globe, Lock, Mail, ShieldCheck } from "lucide-react";
 
 import { AppLogo } from "@/components/app-logo";
 import { Button } from "@/components/ui/button";
@@ -65,8 +65,8 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-md space-y-6">
+    <>
+      {/* <div className="w-full max-w-md space-y-6">
         <div className="flex flex-col items-center space-y-3 text-center">
           <AppLogo className="mb-1 size-12 rounded-xl" />
           <h1 className="text-xl font-bold tracking-tight">
@@ -177,7 +177,116 @@ export default function LoginPage() {
         <p className="text-center text-xs text-muted-foreground">
           Ministère des Armées — BESD © {new Date().getFullYear()}
         </p>
+      </div> */}
+
+      <div className="mx-auto flex w-full flex-col justify-center space-y-8 sm:w-[350px]">
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-medium">Connexion</h1>
+          <p className="text-muted-foreground text-sm">
+            Saisissez votre adresse professionnelle et votre mot de passe.
+          </p>
+        </div>
+        <div className="space-y-4">
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4 pb-4">
+              <div className="space-y-3">
+                <Label htmlFor="login-email">Adresse courriel</Label>
+                <div className="relative">
+                  <Mail
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-2.5 top-4.5 size-4 text-muted-foreground"
+                  />
+                  <Input
+                    id="login-email"
+                    type="email"
+                    autoComplete="username"
+                    placeholder="prenom.nom@defense.gouv"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="pl-10 py-6"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <Label htmlFor="login-password">Mot de passe</Label>
+                  <Link
+                    href="/auth/mot-de-passe-oublie"
+                    className="text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
+                  >
+                    Mot de passe oublié ?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Lock
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-2.5 top-4.5 size-4 text-muted-foreground"
+                  />
+                  <Input
+                    id="login-password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="Votre mot de passe"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="pl-10 py-6"
+                    required
+                  />
+                </div>
+              </div>
+
+              <label
+                htmlFor="login-remember"
+                className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground"
+              >
+                <input
+                  id="login-remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(event) => setRememberMe(event.target.checked)}
+                  className="size-4 accent-primary"
+                />
+                Se souvenir de moi
+              </label>
+
+              {error && (
+                <p role="alert" className="text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+            </CardContent>
+            <CardFooter className="flex flex-col gap-3 pt-2">
+              <Button
+                type="submit"
+                className="w-full h-10 gap-1.5"
+                disabled={loading}
+              >
+                <span>{loading ? "Connexion…" : "Se connecter"}</span>
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Button>
+              <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                <ShieldCheck
+                  aria-hidden="true"
+                  className="size-3.5 text-primary"
+                />
+                <span>Connexion de démonstration sécurisée</span>
+              </div>
+            </CardFooter>
+          </form>
+        </div>
       </div>
-    </main>
+
+      <div className="absolute bottom-5 flex w-full justify-between px-10">
+        <div className="text-sm">
+          République du Burundi — BESD © {new Date().getFullYear()}
+        </div>
+        <div className="flex items-center gap-1 text-sm">
+          <Globe className="text-muted-foreground size-4" />
+          FR
+        </div>
+      </div>
+    </>
   );
 }
