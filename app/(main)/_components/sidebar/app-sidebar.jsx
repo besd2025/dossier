@@ -49,7 +49,9 @@ export function AppSidebar({ ...props }) {
               <Link prefetch={false} href="/dashboard">
                 <AppLogo className="size-8 rounded-lg" />
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-bold text-sm tracking-wide">{APP_CONFIG.name}</span>
+                  <span className="font-bold text-sm tracking-wide">
+                    {APP_CONFIG.name}
+                  </span>
                   <span className="text-muted-foreground text-xs truncate max-w-[160px]">
                     Gestion des dossiers
                   </span>

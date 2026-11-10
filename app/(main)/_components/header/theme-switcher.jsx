@@ -29,6 +29,7 @@ export function ThemeSwitcher() {
       onClick={cycleTheme}
       aria-label={`Thème actuel : ${themeMode}. Cliquer pour changer.`}
       title={`Thème : ${themeMode}`}
+      className="text-primary-foreground"
     >
       {/* SYSTEM */}
       <Monitor className="hidden [html[data-theme-mode=system]_&]:block size-4" />
@@ -41,4 +42,3 @@ export function ThemeSwitcher() {
     </Button>
   );
 }
-

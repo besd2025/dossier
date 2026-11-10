@@ -47,13 +47,13 @@ export default async function MainLayout({ children }) {
         >
           <header
             className={cn(
-              "flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12",
-              "[html[data-navbar-style=sticky]_&]:bg-background/80 [html[data-navbar-style=sticky]_&]:sticky [html[data-navbar-style=sticky]_&]:top-0 [html[data-navbar-style=sticky]_&]:z-40 [html[data-navbar-style=sticky]_&]:overflow-hidden [html[data-navbar-style=sticky]_&]:backdrop-blur-md",
+              "flex h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16",
+              "[html[data-navbar-style=sticky]_&]:bg-primary [html[data-navbar-style=sticky]_&]:sticky [html[data-navbar-style=sticky]_&]:top-0 [html[data-navbar-style=sticky]_&]:z-40 [html[data-navbar-style=sticky]_&]:overflow-hidden [html[data-navbar-style=sticky]_&]:backdrop-blur-md",
             )}
           >
             <div className="flex w-full items-center justify-between px-4 lg:px-6">
               <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ml-1" />
+                <SidebarTrigger className="-ml-1 text-primary-foreground" />
                 <Separator
                   orientation="vertical"
                   className="mx-1 data-[orientation=vertical]:h-4 data-[orientation=vertical]:self-center"

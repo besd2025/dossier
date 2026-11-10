@@ -97,11 +97,11 @@ export function SearchDialog() {
         onClick={() => handleOpenChange(true)}
         variant="outline"
         size="sm"
-        className="text-muted-foreground font-normal h-8 text-xs gap-2 px-2.5 bg-background/50 hover:bg-muted"
+        className="text-muted-foreground font-normal h-8 text-xs gap-2 px-2.5 bg-backg/round hover:bg-primary/20"
       >
-        <Search className="size-3.5" />
-        <span className="hidden sm:inline">Rechercher...</span>
-        <kbd className="bg-muted inline-flex h-4 items-center gap-0.5 rounded border px-1 text-[10px] font-medium text-muted-foreground select-none">
+        <Search className="size-3.5 text-primary-foreground" />
+        {/* <span className="hidden sm:inline">Rechercher...</span> */}
+        <kbd className="bg-muted inline-flex h-4 items-center gap-0.5 rounded  p-2 text-[10px] font-medium text-muted-foreground select-none">
           <span className="text-[9px]">⌘</span>K
         </kbd>
       </Button>
@@ -122,7 +122,9 @@ export function SearchDialog() {
                   onSelect={searchDocuments}
                 >
                   <Search className="size-4" />
-                  <span>Rechercher « {query.trim()} » dans les dossiers et notes</span>
+                  <span>
+                    Rechercher « {query.trim()} » dans les dossiers et notes
+                  </span>
                 </CommandItem>
               </CommandGroup>
             )}

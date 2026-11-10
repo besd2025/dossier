@@ -8,8 +8,8 @@ export const APP_CONFIG = {
   version: "1.0.0",
   copyright: `© ${new Date().getFullYear()} BESD — Tous droits réservés.`,
   meta: {
-    title: "BESD — Application de gestion des dossiers",
-    description: "Application de gestion des dossiers et du circuit de validation du Bureau d'Études et de Stratégie de Défense",
+    title: "Dossiers",
+    description:
+      "Application de gestion des dossiers et du circuit de validation du Bureau d'Études et de Stratégie de Défense",
   },
 };
-

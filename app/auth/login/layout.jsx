@@ -1,35 +1,49 @@
-
-
-import { Command } from "lucide-react";
+import { Command, Landmark } from "lucide-react";
 
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
 export default function Layout({ children }) {
   return (
     <main>
       <div className="grid h-dvh justify-center p-2 lg:grid-cols-2">
-        <div className="bg-primary relative order-2 hidden h-full rounded-3xl lg:flex">
+        <div className="bg-primary relative order-2 hidden h-full rounded-3xl lg:flex overflow-hidden">
           <div className="text-primary-foreground absolute top-10 space-y-1 px-10">
-            <Command className="size-10" />
-            <h1 className="text-2xl font-medium">vdsfsfsd</h1>
-            <p className="text-sm">Design. Build. Launch. Repeat.</p>
+            <Landmark className="size-10" />
+            <h1 className="text-2xl font-medium">BESD</h1>
+            <p className="text-sm">
+              Bureau d&apos;étude stratégique et de développement
+            </p>
           </div>
 
           <div className="absolute bottom-10 flex w-full justify-between px-10">
             <div className="text-primary-foreground flex-1 space-y-1">
               <h2 className="font-medium">Ready to launch?</h2>
-              <p className="text-sm">Clone the repo, install dependencies, and your dashboard is live in minutes.</p>
+              <p className="text-sm">
+                Clone the repo, install dependencies, and your dashboard is live
+                in minutes.
+              </p>
             </div>
             <Separator orientation="vertical" className="mx-3 h-auto!" />
             <div className="text-primary-foreground flex-1 space-y-1">
               <h2 className="font-medium">Need help?</h2>
               <p className="text-sm">
-                Check out the docs or open an issue on GitHub, community support is just a click away.
+                Check out the docs or open an issue on GitHub, community support
+                is just a click away.
               </p>
             </div>
           </div>
+          <Image
+            src="/burundi-emblem-nobg-gd.png"
+            width={400}
+            height={400}
+            alt="Logo"
+            className="w-full h-full object-cover opacity-20"
+          />
         </div>
-        <div className="relative order-1 flex h-full">{children}</div>
+        <div className="relative order-1 flex h-full px-4 md:p-0">
+          {children}
+        </div>
       </div>
     </main>
   );
