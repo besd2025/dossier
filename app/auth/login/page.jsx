@@ -45,10 +45,13 @@ export default function LoginPage() {
       const normalizedEmail = email.trim().toLowerCase();
       const demoIds = new Set(DEMO_ACCOUNTS.map((account) => account.user.id));
       const account = users.find(
-        (user) => demoIds.has(user.id) && user.email.toLowerCase() === normalizedEmail,
+        (user) =>
+          demoIds.has(user.id) && user.email.toLowerCase() === normalizedEmail,
       );
       if (!account) {
-        setError("Cette adresse courriel ne correspond à aucun compte de démonstration actif.");
+        setError(
+          "Cette adresse courriel ne correspond à aucun compte de démonstration actif.",
+        );
         return;
       }
       login(account, rememberMe);
@@ -86,7 +89,10 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="login-email">Adresse courriel</Label>
                 <div className="relative">
-                  <Mail aria-hidden="true" className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                  <Mail
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground"
+                  />
                   <Input
                     id="login-email"
                     type="email"
@@ -103,12 +109,18 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-3">
                   <Label htmlFor="login-password">Mot de passe</Label>
-                  <Link href="/auth/mot-de-passe-oublie" className="text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline">
+                  <Link
+                    href="/auth/mot-de-passe-oublie"
+                    className="text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
+                  >
                     Mot de passe oublié
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock aria-hidden="true" className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+                  <Lock
+                    aria-hidden="true"
+                    className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground"
+                  />
                   <Input
                     id="login-password"
                     type="password"
@@ -122,7 +134,10 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <label htmlFor="login-remember" className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+              <label
+                htmlFor="login-remember"
+                className="flex w-fit cursor-pointer items-center gap-2 text-sm text-muted-foreground"
+              >
                 <input
                   id="login-remember"
                   type="checkbox"
@@ -133,15 +148,26 @@ export default function LoginPage() {
                 Se souvenir de moi
               </label>
 
-              {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+              {error && (
+                <p role="alert" className="text-sm text-destructive">
+                  {error}
+                </p>
+              )}
             </CardContent>
             <CardFooter className="flex flex-col gap-3 pt-2">
-              <Button type="submit" className="w-full gap-1.5" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full gap-1.5"
+                disabled={loading}
+              >
                 <span>{loading ? "Connexion…" : "Se connecter"}</span>
                 <ArrowRight aria-hidden="true" className="size-4" />
               </Button>
               <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-                <ShieldCheck aria-hidden="true" className="size-3.5 text-primary" />
+                <ShieldCheck
+                  aria-hidden="true"
+                  className="size-3.5 text-primary"
+                />
                 <span>Connexion de démonstration sécurisée</span>
               </div>
             </CardFooter>
@@ -152,7 +178,6 @@ export default function LoginPage() {
           Ministère des Armées — BESD © {new Date().getFullYear()}
         </p>
       </div>
-
     </main>
   );
 }
