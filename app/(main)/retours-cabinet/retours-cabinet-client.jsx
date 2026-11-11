@@ -13,6 +13,13 @@ import {
 } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -277,39 +284,43 @@ export default function RetoursCabinetClient() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <label htmlFor="return-dossier" className="text-sm font-medium">Dossier</label>
-                  <select
-                    id="return-dossier"
+                  <Select
                     value={dossierId}
-                    onChange={(event) => {
-                      setDossierId(event.target.value);
+                    onValueChange={(val) => {
+                      setDossierId(val);
                       setNoteOrigineId("");
                     }}
-                    required
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
                   >
-                    <option value="">Sélectionner un dossier…</option>
-                    {options.dossiers.map((dossier) => (
-                      <option key={dossier.id} value={dossier.id}>
-                        {dossier.reference} — {dossier.objet}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger id="return-dossier" className="h-9 w-full bg-background px-3 text-sm">
+                      <SelectValue placeholder="Sélectionner un dossier…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.dossiers.map((dossier) => (
+                        <SelectItem key={dossier.id} value={dossier.id} className="text-xs">
+                          {dossier.reference} — {dossier.objet}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1.5">
                   <label htmlFor="return-note" className="text-sm font-medium">Note d&apos;origine renvoyée</label>
-                  <select
-                    id="return-note"
+                  <Select
                     value={noteOrigineId}
-                    onChange={(event) => setNoteOrigineId(event.target.value)}
-                    required
+                    onValueChange={setNoteOrigineId}
                     disabled={!dossierId}
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
                   >
-                    <option value="">Sélectionner une note…</option>
-                    {notesForDossier.map((note) => (
-                      <option key={note.id} value={note.id}>{note.id} · {note.typeDocument}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger id="return-note" className="h-9 w-full bg-background px-3 text-sm disabled:opacity-50">
+                      <SelectValue placeholder="Sélectionner une note…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {notesForDossier.map((note) => (
+                        <SelectItem key={note.id} value={note.id} className="text-xs">
+                          {note.id} · {note.typeDocument}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             ) : (
@@ -320,22 +331,25 @@ export default function RetoursCabinetClient() {
                 </div>
                 <div className="space-y-1.5">
                   <label htmlFor="return-provenance" className="text-sm font-medium">Provenance</label>
-                  <select
-                    id="return-provenance"
+                  <Select
                     value={provenanceId}
-                    onChange={(event) => {
-                      const selected = options.provenances.find((item) => item.id === event.target.value);
-                      setProvenanceId(event.target.value);
+                    onValueChange={(val) => {
+                      const selected = options.provenances.find((item) => item.id === val);
+                      setProvenanceId(val);
                       setProvenanceNom(selected?.nom || "");
                     }}
-                    required
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
                   >
-                    <option value="">Sélectionner une provenance…</option>
-                    {options.provenances.filter((item) => item.actif).map((item) => (
-                      <option key={item.id} value={item.id}>{item.nom}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger id="return-provenance" className="h-9 w-full bg-background px-3 text-sm">
+                      <SelectValue placeholder="Sélectionner une provenance…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {options.provenances.filter((item) => item.actif).map((item) => (
+                        <SelectItem key={item.id} value={item.id} className="text-xs">
+                          {item.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             )}
@@ -343,16 +357,16 @@ export default function RetoursCabinetClient() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="return-type" className="text-sm font-medium">Type de suite attendu</label>
-                <select
-                  id="return-type"
-                  value={typeSuite}
-                  onChange={(event) => setTypeSuite(event.target.value)}
-                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                >
-                  <option value="DESCENTE">Descente</option>
-                  <option value="PROJET_LETTRE">Projet de lettre</option>
-                  <option value="AUTRE">Autre</option>
-                </select>
+                <Select value={typeSuite} onValueChange={setTypeSuite}>
+                  <SelectTrigger id="return-type" className="h-9 w-full bg-background px-3 text-sm">
+                    <SelectValue placeholder="Type de suite" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DESCENTE" className="text-xs">Descente</SelectItem>
+                    <SelectItem value="PROJET_LETTRE" className="text-xs">Projet de lettre</SelectItem>
+                    <SelectItem value="AUTRE" className="text-xs">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="return-date" className="text-sm font-medium">Date du retour</label>

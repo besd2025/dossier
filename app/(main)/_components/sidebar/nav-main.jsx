@@ -5,7 +5,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "cn";
 import { ChevronRight } from "lucide-react";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -192,7 +196,9 @@ function NavDropdownItem({ item, isActive, isSubItemActive }) {
                     href={subItem.url}
                     target={subItem.newTab ? "_blank" : undefined}
                     rel={subItem.newTab ? "noreferrer" : undefined}
-                    aria-current={isSubItemActive(subItem.url) ? "page" : undefined}
+                    aria-current={
+                      isSubItemActive(subItem.url) ? "page" : undefined
+                    }
                     className="flex items-center gap-2"
                   >
                     {SubIcon && <SubIcon className="size-4" />}
@@ -212,7 +218,11 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }) {
   const Icon = item.icon;
 
   return (
-    <Collapsible asChild defaultOpen={defaultOpen} className="group/collapsible">
+    <Collapsible
+      asChild
+      defaultOpen={defaultOpen}
+      className="group/collapsible"
+    >
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
@@ -276,4 +286,3 @@ function NavItemBadge({ badge }) {
     </SidebarMenuBadge>
   );
 }
-

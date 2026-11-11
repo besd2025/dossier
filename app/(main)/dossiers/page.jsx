@@ -6,8 +6,18 @@ import { Download, Plus } from "lucide-react";
 
 import { DataTable, OverdueIndicator, StatusBadge } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { initialCellules, initialDossierCellules, initialProvenances } from "@/src/lib/mock/data";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  initialCellules,
+  initialDossierCellules,
+  initialProvenances,
+} from "@/src/lib/mock/data";
 import { getDossiers } from "@/src/lib/services/dossiers-service";
 import { useSessionStore } from "@/stores/session/session-store";
 import { InstructionCabinet, OrigineDossier, StatutDossier } from "@/types";
@@ -47,15 +57,18 @@ export default function DossiersPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [celluleFilter, setCelluleFilter] = useState("all");
-  const [provenanceFilter, setProvenanceFilter] = useState("all");
-  const [instructionFilter, setInstructionFilter] = useState("all");
-  const [origineFilter, setOrigineFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("Tous");
+  const [celluleFilter, setCelluleFilter] = useState("Tous");
+  const [provenanceFilter, setProvenanceFilter] = useState("Tous");
+  const [instructionFilter, setInstructionFilter] = useState("Tous");
+  const [origineFilter, setOrigineFilter] = useState("Tous");
   const [overdueOnly, setOverdueOnly] = useState(false);
 
   const cellMap = useMemo(
-    () => Object.fromEntries(initialCellules.map((cellule) => [cellule.id, cellule])),
+    () =>
+      Object.fromEntries(
+        initialCellules.map((cellule) => [cellule.id, cellule]),
+      ),
     [],
   );
 
@@ -89,12 +102,12 @@ export default function DossiersPage() {
     setLoadingState(true, "");
 
     const filters = {
-      status: statusFilter === "all" ? "" : statusFilter,
-      celluleId: celluleFilter === "all" ? "" : celluleFilter,
-      provenanceId: provenanceFilter === "all" ? "" : provenanceFilter,
+      status: statusFilter === "Tous" ? "" : statusFilter,
+      celluleId: celluleFilter === "Tous" ? "" : celluleFilter,
+      provenanceId: provenanceFilter === "Tous" ? "" : provenanceFilter,
       overdueOnly,
-      instruction: instructionFilter === "all" ? "" : instructionFilter,
-      origine: origineFilter === "all" ? "" : origineFilter,
+      instruction: instructionFilter === "Tous" ? "" : instructionFilter,
+      origine: origineFilter === "Tous" ? "" : origineFilter,
     };
 
     getDossiers(filters, currentRole, currentUser)
@@ -102,7 +115,8 @@ export default function DossiersPage() {
         if (isMounted) setRows(result);
       })
       .catch((err) => {
-        if (isMounted) setError(err?.message || "Impossible de charger les dossiers.");
+        if (isMounted)
+          setError(err?.message || "Impossible de charger les dossiers.");
       })
       .finally(() => {
         if (isMounted) setLoadingState(false);
@@ -111,7 +125,16 @@ export default function DossiersPage() {
     return () => {
       isMounted = false;
     };
-  }, [currentRole, currentUser, statusFilter, celluleFilter, provenanceFilter, instructionFilter, origineFilter, overdueOnly]);
+  }, [
+    currentRole,
+    currentUser,
+    statusFilter,
+    celluleFilter,
+    provenanceFilter,
+    instructionFilter,
+    origineFilter,
+    overdueOnly,
+  ]);
 
   const columns = useMemo(
     () => [
@@ -119,7 +142,7 @@ export default function DossiersPage() {
         accessorKey: "reference",
         header: "Référence",
         cell: ({ row }) => (
-          <span className="font-mono text-[11px] font-semibold text-primary">
+          <span className="text-sm font-semibold text-primary">
             {row.getValue("reference")}
           </span>
         ),
@@ -128,22 +151,27 @@ export default function DossiersPage() {
         accessorKey: "objet",
         header: "Objet",
         cell: ({ row }) => (
-          <span className="block max-w-[24rem] truncate">{row.getValue("objet")}</span>
+          <span className="block max-w-[24rem] truncate">
+            {row.getValue("objet")}
+          </span>
         ),
       },
       {
         accessorKey: "provenanceNom",
         header: "Provenance",
         cell: ({ row }) => (
-          <span className="text-[11px] text-muted-foreground">{row.getValue("provenanceNom")}</span>
+          <span className="text-sm  text-muted-foreground">
+            {row.getValue("provenanceNom")}
+          </span>
         ),
       },
       {
         accessorKey: "instructionCabinet",
         header: "Instruction",
         cell: ({ row }) => (
-          <span className="text-[11px] font-medium text-foreground">
-            {INSTRUCTION_LABELS[row.getValue("instructionCabinet")] || row.getValue("instructionCabinet")}
+          <span className="text-sm  font-medium text-foreground">
+            {INSTRUCTION_LABELS[row.getValue("instructionCabinet")] ||
+              row.getValue("instructionCabinet")}
           </span>
         ),
       },
@@ -151,33 +179,43 @@ export default function DossiersPage() {
         accessorKey: "statutDossier",
         header: "Statut",
         cell: ({ row }) => (
-          <StatusBadge status={row.getValue("statutDossier")} type="dossier" size="sm" />
+          <StatusBadge status={row.getValue("statutDossier")} type="dossier" />
         ),
       },
       {
         accessorKey: "celluleDisplay",
         header: "Cellule(s)",
         cell: ({ row }) => (
-          <span className="text-[11px] text-muted-foreground">{row.getValue("celluleDisplay")}</span>
+          <span className="text-sm  text-muted-foreground">
+            {row.getValue("celluleDisplay")}
+          </span>
         ),
       },
       {
         accessorKey: "dateReceptionBesd",
         header: "Date BESD",
         cell: ({ row }) => (
-          <span className="font-mono text-[11px]">{formatDate(row.getValue("dateReceptionBesd"))}</span>
+          <span className=" text-sm ">
+            {formatDate(row.getValue("dateReceptionBesd"))}
+          </span>
         ),
       },
       {
         accessorKey: "joursSansAvancement",
         header: "Retard",
-        cell: ({ row }) => <OverdueIndicator days={row.getValue("joursSansAvancement")} compact />,
+        cell: ({ row }) => (
+          <OverdueIndicator
+            days={row.getValue("joursSansAvancement")}
+            compact
+            className="text-xs"
+          />
+        ),
       },
       {
         accessorKey: "origine",
         header: "Origine",
         cell: ({ row }) => (
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-sm  text-muted-foreground">
             {ORIGINE_LABELS[row.getValue("origine")] || row.getValue("origine")}
           </span>
         ),
@@ -189,13 +227,15 @@ export default function DossiersPage() {
   const filterControls = (
     <div className="flex flex-wrap items-center gap-2">
       <Select value={statusFilter} onValueChange={setStatusFilter}>
-        <SelectTrigger className="h-8 w-[150px] text-xs">
+        <SelectTrigger className="h-8 w-[150px] text-sm">
           <SelectValue placeholder="Tous statuts" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all" className="text-xs">Tous statuts</SelectItem>
+        <SelectContent className="px-2 py-1 w-max">
+          <SelectItem value="Tous" className="text-xs text-muted-foreground">
+            Tous statuts
+          </SelectItem>
           {Object.values(StatutDossier).map((status) => (
-            <SelectItem key={status} value={status} className="text-xs">
+            <SelectItem key={status} value={status} className="text-sm">
               {status}
             </SelectItem>
           ))}
@@ -203,13 +243,15 @@ export default function DossiersPage() {
       </Select>
 
       <Select value={celluleFilter} onValueChange={setCelluleFilter}>
-        <SelectTrigger className="h-8 w-[170px] text-xs">
+        <SelectTrigger className="h-8 w-[170px] text-sm">
           <SelectValue placeholder="Toutes cellules" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all" className="text-xs">Toutes cellules</SelectItem>
+        <SelectContent className="px-2 py-1 w-max">
+          <SelectItem value="Tous" className="text-xs text-muted-foreground">
+            Toutes cellules
+          </SelectItem>
           {initialCellules.map((cellule) => (
-            <SelectItem key={cellule.id} value={cellule.id} className="text-xs">
+            <SelectItem key={cellule.id} value={cellule.id} className="text-sm">
               {cellule.code || cellule.nom}
             </SelectItem>
           ))}
@@ -217,13 +259,19 @@ export default function DossiersPage() {
       </Select>
 
       <Select value={provenanceFilter} onValueChange={setProvenanceFilter}>
-        <SelectTrigger className="h-8 w-[180px] text-xs">
+        <SelectTrigger className="h-8 w-[180px] text-sm">
           <SelectValue placeholder="Toutes provenances" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all" className="text-xs">Toutes provenances</SelectItem>
+        <SelectContent className="px-2 py-1 w-max">
+          <SelectItem value="Tous" className="text-xs text-muted-foreground">
+            Toutes provenances
+          </SelectItem>
           {initialProvenances.map((provenance) => (
-            <SelectItem key={provenance.id} value={provenance.id} className="text-xs">
+            <SelectItem
+              key={provenance.id}
+              value={provenance.id}
+              className="text-sm"
+            >
               {provenance.nom}
             </SelectItem>
           ))}
@@ -231,13 +279,19 @@ export default function DossiersPage() {
       </Select>
 
       <Select value={instructionFilter} onValueChange={setInstructionFilter}>
-        <SelectTrigger className="h-8 w-[170px] text-xs">
+        <SelectTrigger className="h-8 w-[170px] text-sm">
           <SelectValue placeholder="Toutes instructions" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all" className="text-xs">Toutes instructions</SelectItem>
+        <SelectContent className="px-2 py-1 w-max">
+          <SelectItem value="Tous" className="text-xs text-muted-foreground">
+            Toutes instructions
+          </SelectItem>
           {Object.values(InstructionCabinet).map((instruction) => (
-            <SelectItem key={instruction} value={instruction} className="text-xs">
+            <SelectItem
+              key={instruction}
+              value={instruction}
+              className="text-sm"
+            >
               {INSTRUCTION_LABELS[instruction] || instruction}
             </SelectItem>
           ))}
@@ -245,25 +299,27 @@ export default function DossiersPage() {
       </Select>
 
       <Select value={origineFilter} onValueChange={setOrigineFilter}>
-        <SelectTrigger className="h-8 w-[170px] text-xs">
+        <SelectTrigger className="h-8 w-[170px] text-sm">
           <SelectValue placeholder="Toutes origines" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all" className="text-xs">Toutes origines</SelectItem>
+        <SelectContent className="px-2 py-1 w-max">
+          <SelectItem value="Tous" className="text-xs text-muted-foreground">
+            Toutes origines
+          </SelectItem>
           {Object.values(OrigineDossier).map((origine) => (
-            <SelectItem key={origine} value={origine} className="text-xs">
+            <SelectItem key={origine} value={origine} className="text-sm">
               {ORIGINE_LABELS[origine] || origine}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      <label className="inline-flex items-center gap-2 rounded-md border bg-background px-2 py-1.5 text-[11px] text-muted-foreground">
+      <label className="inline-flex items-center gap-2 rounded-md border bg-background px-2 py-1.5 text-sm text-destructive">
         <input
           type="checkbox"
           checked={overdueOnly}
           onChange={(event) => setOverdueOnly(event.target.checked)}
-          className="h-3.5 w-3.5 accent-primary"
+          className="h-3.5 w-3.5 accent-destructive"
         />
         En retard seulement
       </label>
@@ -274,13 +330,20 @@ export default function DossiersPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Liste des dossiers</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Liste des dossiers
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Tableau de suivi et filtres selon le rôle courant et le périmètre BESD.
+            Tableau de suivi et filtres selon le rôle courant et le périmètre
+            BESD.
           </p>
         </div>
 
-        <Button variant="default" size="sm" onClick={() => router.push("/dossiers/nouveau")}>
+        <Button
+          variant="secondary"
+          size="lg"
+          onClick={() => router.push("/dossiers/nouveau")}
+        >
           <Plus className="size-4" />
           Nouveau dossier
         </Button>
@@ -304,7 +367,7 @@ export default function DossiersPage() {
         filters={filterControls}
         onRowClick={(row) => router.push(`/dossiers/${row.id}`)}
         toolbarActions={
-          <Button variant="outline" size="sm" className="h-8 text-xs">
+          <Button variant="outline" size="sm" className="h-8 text-sm">
             <Download className="size-3.5" />
             Exporter
           </Button>
@@ -314,4 +377,3 @@ export default function DossiersPage() {
     </div>
   );
 }
-

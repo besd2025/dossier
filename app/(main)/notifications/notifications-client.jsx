@@ -11,6 +11,13 @@ import {
 } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "@/lib/services/notifications-service";
 import { useSessionStore } from "@/stores/session/session-store";
@@ -142,27 +149,31 @@ export default function NotificationsPage() {
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
           <label htmlFor="notification-read-filter" className="text-xs font-medium text-muted-foreground">État</label>
-          <select
-            id="notification-read-filter"
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            className="h-9 min-w-36 rounded-md border border-input bg-background px-3 text-sm"
-          >
-            <option value="TOUTES">Toutes</option>
-            <option value="NON_LUES">Non lues</option>
-          </select>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger id="notification-read-filter" className="h-9 min-w-36 bg-background px-3 text-sm">
+              <SelectValue placeholder="État" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TOUTES" className="text-xs">Toutes</SelectItem>
+              <SelectItem value="NON_LUES" className="text-xs">Non lues</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1">
           <label htmlFor="notification-type-filter" className="text-xs font-medium text-muted-foreground">Type</label>
-          <select
-            id="notification-type-filter"
-            value={typeFilter}
-            onChange={(event) => setTypeFilter(event.target.value)}
-            className="h-9 min-w-48 rounded-md border border-input bg-background px-3 text-sm"
-          >
-            <option value="TOUS">Tous les types</option>
-            {types.map((type) => <option key={type} value={type}>{TYPE_LABELS[type] || type}</option>)}
-          </select>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger id="notification-type-filter" className="h-9 min-w-48 bg-background px-3 text-sm">
+              <SelectValue placeholder="Tous les types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TOUS" className="text-xs">Tous les types</SelectItem>
+              {types.map((type) => (
+                <SelectItem key={type} value={type} className="text-xs">
+                  {TYPE_LABELS[type] || type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <p className="ml-auto text-sm text-muted-foreground" aria-live="polite">
           {unreadCount} non lue{unreadCount > 1 ? "s" : ""}

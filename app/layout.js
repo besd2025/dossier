@@ -1,3 +1,4 @@
+import { Figtree } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { APP_CONFIG } from "@/config/app-config";
@@ -6,6 +7,12 @@ import { ThemeBootScript } from "@/scripts/theme-boot";
 import { PreferencesStoreProvider } from "@/stores/preferences/preferences-provider";
 
 import "./globals.css";
+
+const figtree = Figtree({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata = {
   title: APP_CONFIG.meta.title,
@@ -26,6 +33,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="fr"
+      className={figtree.variable}
       data-theme-mode={theme_mode}
       data-theme-preset={theme_preset}
       data-content-layout={content_layout}
@@ -37,7 +45,7 @@ export default function RootLayout({ children }) {
       <head>
         <ThemeBootScript />
       </head>
-      <body className="min-h-screen bg-background text-foreground antialiased font-sans">
+      <body className={`${figtree.variable} min-h-screen bg-background text-foreground antialiased font-sans`}>
         <TooltipProvider>
           <PreferencesStoreProvider initialValues={PREFERENCE_DEFAULTS}>
             {children}

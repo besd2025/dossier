@@ -38,7 +38,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.872 0.01 258.338);
   --sidebar-ring: oklch(0.708 0 0);
-  --font-sans: Roboto, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Roboto Serif, ui-serif, serif;
   --font-mono: Roboto Mono, ui-monospace, monospace;
   --radius: 0.625rem;
@@ -98,7 +97,6 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(0.278 0.033 256.848);
   --sidebar-ring: oklch(0.556 0 0);
-  --font-sans: Roboto, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Roboto Serif, ui-serif, serif;
   --font-mono: Roboto Mono, ui-monospace, monospace;
   --radius: 0.625rem;
@@ -157,7 +155,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-sans), ui-sans-serif, sans-serif, system-ui;
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
@@ -180,6 +178,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    font-size: 102%;
+  } /* 16px -> 18px (1rem = 18px) */
   body {
     @apply bg-background text-foreground;
   }

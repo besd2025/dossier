@@ -36,7 +36,8 @@ export function OverdueIndicator({
   showNormal = true,
   className,
 }) {
-  const days = propDays !== undefined ? propDays : dossier?.joursSansAvancement ?? 0;
+  const days =
+    propDays !== undefined ? propDays : (dossier?.joursSansAvancement ?? 0);
   const isOverdue = days > threshold || dossier?.enRetard === true;
 
   const tooltipText = isOverdue
@@ -51,22 +52,34 @@ export function OverdueIndicator({
     <Badge
       variant="outline"
       className={cn(
-        "inline-flex items-center gap-1 text-xs select-none font-mono tabular-nums transition-colors",
+        "inline-flex items-center gap-1 text-xs select-none transition-colors",
         isOverdue
           ? "border-destructive/30 bg-destructive/10 text-destructive dark:bg-destructive/20 font-bold animate-pulse"
           : "border-border bg-muted/40 text-muted-foreground font-normal",
         compact ? "px-1.5 py-0 h-4.5 text-[10px]" : "px-2 py-0.5 h-5",
-        className
+        className,
       )}
     >
       {isOverdue ? (
-        <AlertTriangle className={cn("shrink-0", compact ? "size-2.5" : "size-3 text-destructive")} />
+        <AlertTriangle
+          className={cn(
+            "shrink-0",
+            compact ? "size-4" : "size-3 text-destructive",
+          )}
+        />
       ) : (
-        <Clock className={cn("shrink-0 text-muted-foreground", compact ? "size-2.5" : "size-3")} />
+        <Clock
+          className={cn(
+            "shrink-0 text-muted-foreground",
+            compact ? "size-4" : "size-3",
+          )}
+        />
       )}
 
       {compact ? (
-        <span>{days}j</span>
+        <span>
+          {days == 0 ? "Aucun" : days > 1 ? days + " jours" : days + " jour"}
+        </span>
       ) : (
         <span>
           {isOverdue ? `En retard (${days} j)` : `${days} j sans avancement`}
@@ -95,4 +108,3 @@ export function OverdueIndicator({
 }
 
 export default OverdueIndicator;
-

@@ -68,9 +68,21 @@ function getPageNumbers(currentPage, pageCount) {
   }
   if (currentPage <= 3) return [1, 2, 3, 4, 5];
   if (currentPage >= pageCount - 2) {
-    return [pageCount - 4, pageCount - 3, pageCount - 2, pageCount - 1, pageCount];
+    return [
+      pageCount - 4,
+      pageCount - 3,
+      pageCount - 2,
+      pageCount - 1,
+      pageCount,
+    ];
   }
-  return [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+  return [
+    currentPage - 2,
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    currentPage + 2,
+  ];
 }
 
 /**
@@ -117,7 +129,8 @@ export function DataTable({
   const [internalSorting, setInternalSorting] = React.useState([]);
   const [internalColumnFilters, setInternalColumnFilters] = React.useState([]);
   const [internalGlobalFilter, setInternalGlobalFilter] = React.useState("");
-  const [internalColumnVisibility, setInternalColumnVisibility] = React.useState({});
+  const [internalColumnVisibility, setInternalColumnVisibility] =
+    React.useState({});
   const [internalRowSelection, setInternalRowSelection] = React.useState({});
   const [internalPagination, setInternalPagination] = React.useState({
     pageIndex: 0,
@@ -152,17 +165,21 @@ export function DataTable({
   const table = propTable || internalTable;
 
   const pageCount = Math.max(table.getPageCount(), 1);
-  const currentPage = Math.min((table.state?.pagination?.pageIndex ?? 0) + 1, pageCount);
+  const currentPage = Math.min(
+    (table.state?.pagination?.pageIndex ?? 0) + 1,
+    pageCount,
+  );
   const pageNumbers = getPageNumbers(currentPage, pageCount);
   const rowsPerPage = `${table.state?.pagination?.pageSize ?? 10}`;
 
-  const selectedCount = table.getFilteredSelectedRowModel?.()?.rows?.length ?? 0;
+  const selectedCount =
+    table.getFilteredSelectedRowModel?.()?.rows?.length ?? 0;
   const totalCount = table.getFilteredRowModel?.()?.rows?.length ?? 0;
 
   // Gestion de la recherche
   const currentSearchValue = searchColumn
-    ? table.getColumn(searchColumn)?.getFilterValue() ?? ""
-    : table.state?.globalFilter ?? "";
+    ? (table.getColumn(searchColumn)?.getFilterValue() ?? "")
+    : (table.state?.globalFilter ?? "");
 
   const handleSearchChange = (value) => {
     if (searchColumn) {
@@ -181,7 +198,7 @@ export function DataTable({
           <div className="flex flex-wrap items-center gap-2 flex-1">
             {showSearch && (
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-2.5 size-3.5 text-primary" />
                 <Input
                   placeholder={searchPlaceholder}
                   value={currentSearchValue}
@@ -210,14 +227,20 @@ export function DataTable({
             {showColumnVisibility && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild nativeButton>
-                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5"
+                  >
                     <Columns3 className="size-3.5" />
                     <span>Colonnes</span>
                     <ChevronDown className="size-3 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel className="text-xs">Colonnes visibles</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-xs">
+                    Colonnes visibles
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {table
                     .getAllColumns()
@@ -228,7 +251,9 @@ export function DataTable({
                           key={column.id}
                           className="text-xs capitalize"
                           checked={column.getIsVisible()}
-                          onCheckedChange={(value) => column.toggleVisibility(Boolean(value))}
+                          onCheckedChange={(value) =>
+                            column.toggleVisibility(Boolean(value))
+                          }
                         >
                           {typeof column.columnDef.header === "string"
                             ? column.columnDef.header
@@ -248,15 +273,12 @@ export function DataTable({
 
       {/* Conteneur de tableau stylisé */}
       <div className="rounded-lg border bg-card overflow-hidden shadow-xs">
-        <Table className="**:data-[slot='table-cell']:px-3 **:data-[slot='table-head']:px-3 text-xs">
-          <TableHeader className="bg-muted/50 border-b">
+        <Table className="**:data-[slot='table-cell']:px-3 **:data-[slot='table-head']:px-3 text-sm">
+          <TableHeader className="bg-muted border-b">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="py-2.5 font-semibold text-muted-foreground select-none"
-                  >
+                  <TableHead key={header.id} className="py-2.5 select-none">
                     {header.isPlaceholder ? null : (
                       <table.FlexRender header={header} />
                     )}
@@ -273,7 +295,7 @@ export function DataTable({
                   key={row.id}
                   className={cn(
                     "hover:bg-muted/40 transition-colors border-b last:border-b-0",
-                    onRowClick && "cursor-pointer"
+                    onRowClick && "cursor-pointer",
                   )}
                   data-state={row.getIsSelected() && "selected"}
                   onClick={() => onRowClick?.(row.original)}
@@ -293,9 +315,12 @@ export function DataTable({
                 >
                   <div className="flex flex-col items-center justify-center gap-1.5">
                     <Filter className="size-5 text-muted-foreground/50 mb-1" />
-                    <span className="font-medium text-foreground">{emptyMessage}</span>
+                    <span className="font-medium text-foreground">
+                      {emptyMessage}
+                    </span>
                     <span className="text-[11px] text-muted-foreground">
-                      Essayez de modifier vos critères de recherche ou vos filtres.
+                      Essayez de modifier vos critères de recherche ou vos
+                      filtres.
                     </span>
                   </div>
                 </TableCell>
@@ -327,13 +352,20 @@ export function DataTable({
                 value={rowsPerPage}
                 onValueChange={(value) => table.setPageSize(Number(value))}
               >
-                <SelectTrigger size="sm" className="w-16 h-7 text-xs bg-background">
+                <SelectTrigger
+                  size="sm"
+                  className="w-16 h-7 text-xs bg-background"
+                >
                   <SelectValue placeholder={rowsPerPage} />
                 </SelectTrigger>
                 <SelectContent side="top">
                   <SelectGroup>
                     {[5, 10, 20, 50, 100].map((pageSize) => (
-                      <SelectItem key={pageSize} value={`${pageSize}`} className="text-xs">
+                      <SelectItem
+                        key={pageSize}
+                        value={`${pageSize}`}
+                        className="text-xs"
+                      >
                         {pageSize}
                       </SelectItem>
                     ))}

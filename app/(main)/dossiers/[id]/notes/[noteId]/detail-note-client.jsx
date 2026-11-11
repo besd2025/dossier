@@ -26,6 +26,13 @@ import {
 import { PermissionGate } from "@/components/permission-gate";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -654,18 +661,17 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
                 <label htmlFor="reopen-authority" className="text-sm font-medium">
                   Autorité ayant autorisé
                 </label>
-                <select
-                  id="reopen-authority"
-                  value={reopenAuthority}
-                  onChange={(event) => setReopenAuthority(event.target.value)}
-                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                  required
-                >
-                  <option value="Chef de bureau">Chef de bureau</option>
-                  <option value="Directeur de cabinet">Directeur de cabinet</option>
-                  <option value="Chef d’état-major">Chef d’état-major</option>
-                  <option value="Autre autorité">Autre autorité</option>
-                </select>
+                <Select value={reopenAuthority} onValueChange={setReopenAuthority}>
+                  <SelectTrigger id="reopen-authority" className="h-9 w-full bg-background px-3 text-sm">
+                    <SelectValue placeholder="Sélectionner une autorité" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Chef de bureau" className="text-xs">Chef de bureau</SelectItem>
+                    <SelectItem value="Directeur de cabinet" className="text-xs">Directeur de cabinet</SelectItem>
+                    <SelectItem value="Chef d’état-major" className="text-xs">Chef d’état-major</SelectItem>
+                    <SelectItem value="Autre autorité" className="text-xs">Autre autorité</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="reopen-date" className="text-sm font-medium">Date</label>
