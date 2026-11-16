@@ -76,7 +76,8 @@ export function PdfFirstPageViewer({
       setIsFullscreen(Boolean(document.fullscreenElement));
     };
     document.addEventListener("fullscreenchange", handleFsChange);
-    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFsChange);
   }, []);
 
   return (
@@ -84,21 +85,18 @@ export function PdfFirstPageViewer({
       ref={containerRef}
       className={cn(
         "flex flex-col rounded-xl border bg-card overflow-hidden shadow-xs transition-all",
-        isFullscreen ? "p-4 bg-background fixed inset-0 z-50 rounded-none border-none" : "",
-        className
+        isFullscreen
+          ? "p-4 bg-background fixed inset-0 z-50 rounded-none border-none"
+          : "",
+        className,
       )}
     >
       {/* En-tête de la visionneuse avec outils */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/40 px-3.5 py-2">
         <div className="flex items-center gap-2">
-          <FileText className="size-4 text-primary" />
+          <FileText className="size-4 text-secondary" />
           <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-xs text-foreground">{title}</span>
-            {reference && (
-              <Badge variant="outline" className="text-[10px] font-mono h-4 px-1 bg-background">
-                {reference}
-              </Badge>
-            )}
+            <span className="font-semibold  text-foreground">{title}</span>
           </div>
         </div>
 
@@ -157,7 +155,12 @@ export function PdfFirstPageViewer({
               className="h-7 px-2 text-xs gap-1"
               title="Télécharger la première page"
             >
-              <a href={src} download="premiere-page-besd.pdf" target="_blank" rel="noreferrer">
+              <a
+                href={src}
+                download="premiere-page-besd.pdf"
+                target="_blank"
+                rel="noreferrer"
+              >
                 <Download className="size-3" />
                 <span className="hidden sm:inline">Télécharger</span>
               </a>
@@ -172,7 +175,11 @@ export function PdfFirstPageViewer({
             className="size-7 p-0 h-7"
             title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
           >
-            {isFullscreen ? <Minimize2 className="size-3" /> : <Maximize2 className="size-3" />}
+            {isFullscreen ? (
+              <Minimize2 className="size-3" />
+            ) : (
+              <Maximize2 className="size-3" />
+            )}
           </Button>
         </div>
       </div>
@@ -182,7 +189,9 @@ export function PdfFirstPageViewer({
         <div className="flex items-center justify-between gap-2 bg-amber-500/10 border-b border-amber-500/20 px-3.5 py-1.5 text-[11px] text-amber-800 dark:text-amber-300">
           <div className="flex items-center gap-1.5 font-medium">
             <Eye className="size-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>Mention officielle : Seule la première page est numérisée.</span>
+            <span>
+              Mention officielle : Seule la première page est numérisée.
+            </span>
           </div>
           <span className="text-[10px] text-muted-foreground hidden md:inline">
             Document papier archivé au secrétariat
@@ -191,7 +200,7 @@ export function PdfFirstPageViewer({
       )}
 
       {/* Cadre de visualisation de la première page */}
-      <div className="relative flex-1 min-h-[380px] max-h-[640px] bg-muted/20 overflow-auto p-4 flex items-center justify-center">
+      <div className="relative flex-1 min-h-[380px] max-h-[640px] bg-muted/20 overflow-auto p-4 flex items-center justify-center mt-6">
         <div
           className="transition-transform duration-200 shadow-md border rounded-md bg-white dark:bg-zinc-900 overflow-hidden"
           style={{
@@ -215,4 +224,3 @@ export function PdfFirstPageViewer({
 }
 
 export default PdfFirstPageViewer;
-

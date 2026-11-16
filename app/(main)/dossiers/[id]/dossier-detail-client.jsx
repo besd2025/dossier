@@ -8,11 +8,17 @@ import {
   BriefcaseBusiness,
   CalendarDays,
   FileText,
+  FolderKey,
+  FolderSearch,
   KeyRound,
   LockKeyhole,
   MessageSquareText,
+  NotepadText,
+  Target,
   UserRound,
   UsersRound,
+  UsersRoundCollaboration,
+  UserStar,
 } from "lucide-react";
 
 import { PermissionGate } from "@/components/permission-gate";
@@ -70,7 +76,12 @@ const ACTIONS = Object.freeze({
   affecter: {
     label: "Affecter",
     ability: "affecter",
-    roles: [Role.CHEF_BUREAU, Role.CHEF_BUREAU_ADJOINT, Role.CHEF_CELLULE, Role.CHEF_CELLULE_ADJOINT],
+    roles: [
+      Role.CHEF_BUREAU,
+      Role.CHEF_BUREAU_ADJOINT,
+      Role.CHEF_CELLULE,
+      Role.CHEF_CELLULE_ADJOINT,
+    ],
   },
   confierAdjoint: {
     label: "Confier à l'adjoint",
@@ -91,7 +102,12 @@ const ACTIONS = Object.freeze({
 
 function displayName(user) {
   if (!user) return "—";
-  return [user.prenom, user.nom].filter(Boolean).join(" ") || user.nom || user.id || "—";
+  return (
+    [user.prenom, user.nom].filter(Boolean).join(" ") ||
+    user.nom ||
+    user.id ||
+    "—"
+  );
 }
 
 function formatDate(value) {
@@ -131,7 +147,10 @@ function getNextAction(note) {
   switch (note.statutNote) {
     case StatutNote.BROUILLON:
     case StatutNote.ROUVERTE:
-      return { action: "Déposer une version", owner: displayName(note.redacteur) };
+      return {
+        action: "Déposer une version",
+        owner: displayName(note.redacteur),
+      };
     case StatutNote.RELECTURE_CELLULE:
       return { action: "Relecture de la cellule", owner: "Chef de cellule" };
     case StatutNote.RELECTURE_BUREAU:
@@ -166,8 +185,12 @@ function getPanelAction(note, role) {
     return { label: "Valider la note", ability: "valider" };
   }
   if (
-    [StatutNote.VALIDEE, StatutNote.EN_ATTENTE_IMPRESSION].includes(note.statutNote) &&
-    [Role.CHEF_BUREAU, Role.CHEF_BUREAU_ADJOINT, Role.SECRETARIAT].includes(role)
+    [StatutNote.VALIDEE, StatutNote.EN_ATTENTE_IMPRESSION].includes(
+      note.statutNote,
+    ) &&
+    [Role.CHEF_BUREAU, Role.CHEF_BUREAU_ADJOINT, Role.SECRETARIAT].includes(
+      role,
+    )
   ) {
     return { label: "Imprimer la note", ability: "imprimer" };
   }
@@ -186,7 +209,11 @@ function getPanelAction(note, role) {
 
 function LoadingDetail() {
   return (
-    <div className="space-y-5" aria-busy="true" aria-label="Chargement de la fiche dossier">
+    <div
+      className="space-y-5"
+      aria-busy="true"
+      aria-label="Chargement de la fiche dossier"
+    >
       <div className="h-24 animate-pulse rounded-xl bg-muted" />
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-4">
@@ -199,11 +226,11 @@ function LoadingDetail() {
   );
 }
 
-function InformationRow({ label, children }) {
+function InformationRow({ label, children, className }) {
   return (
     <div className="space-y-1">
       <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium">{children || "—"}</dd>
+      <dd className={`text-sm font-medium ${className}`}>{children || "—"}</dd>
     </div>
   );
 }
@@ -211,7 +238,10 @@ function InformationRow({ label, children }) {
 function LimitedAccessMessage() {
   return (
     <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-      <LockKeyhole className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden="true" />
+      <LockKeyhole
+        className="mt-0.5 size-4 shrink-0 text-amber-600"
+        aria-hidden="true"
+      />
       <p>
         <span className="font-semibold">Accès limité</span>
         {" — demander un accès exceptionnel au Chef de bureau."}
@@ -237,7 +267,10 @@ export default function DossierDetailClient({ dossierId }) {
         if (active) setDossier(result);
       })
       .catch((loadError) => {
-        if (active) setError(loadError?.message || "Impossible de charger la fiche du dossier.");
+        if (active)
+          setError(
+            loadError?.message || "Impossible de charger la fiche du dossier.",
+          );
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -256,15 +289,20 @@ export default function DossierDetailClient({ dossierId }) {
   }, []);
 
   const celluleIds = useMemo(
-    () => new Set((dossier?.cellules || []).map((assignment) => assignment.celluleId)),
+    () =>
+      new Set(
+        (dossier?.cellules || []).map((assignment) => assignment.celluleId),
+      ),
     [dossier],
   );
-  const isCelluleRole = role === Role.CHEF_CELLULE || role === Role.CHEF_CELLULE_ADJOINT;
+  const isCelluleRole =
+    role === Role.CHEF_CELLULE || role === Role.CHEF_CELLULE_ADJOINT;
   const isOutOfCellScope = Boolean(
     isCelluleRole && user?.celluleId && !celluleIds.has(user.celluleId),
   );
   const isSecretariat = role === Role.SECRETARIAT;
-  const canSeeAccessTab = role === Role.CHEF_BUREAU || role === Role.CHEF_BUREAU_ADJOINT;
+  const canSeeAccessTab =
+    role === Role.CHEF_BUREAU || role === Role.CHEF_BUREAU_ADJOINT;
 
   const allNotes = useMemo(
     () => (dossier?.cycles || []).flatMap((cycle) => cycle.notes || []),
@@ -273,7 +311,9 @@ export default function DossierDetailClient({ dossierId }) {
   const currentNote = useMemo(
     () =>
       [...allNotes].sort(
-        (a, b) => new Date(b.dateCreation || 0).getTime() - new Date(a.dateCreation || 0).getTime(),
+        (a, b) =>
+          new Date(b.dateCreation || 0).getTime() -
+          new Date(a.dateCreation || 0).getTime(),
       )[0] || null,
     [allNotes],
   );
@@ -287,14 +327,19 @@ export default function DossierDetailClient({ dossierId }) {
     () =>
       (dossier?.cellules || []).map((assignment) => ({
         ...assignment,
-        label: assignment.cellule?.code || assignment.cellule?.nom || assignment.celluleId,
+        label:
+          assignment.cellule?.code ||
+          assignment.cellule?.nom ||
+          assignment.celluleId,
       })),
     [dossier],
   );
   const permissionDossier = useMemo(
     () => ({
       ...dossier,
-      cellulePrincipale: assignedCells.find((cell) => cell.type === "PRINCIPALE")?.cellule?.code,
+      cellulePrincipale: assignedCells.find(
+        (cell) => cell.type === "PRINCIPALE",
+      )?.cellule?.code,
       cellules: assignedCells.map((cell) => cell.cellule?.code).filter(Boolean),
       affectations: dossier?.affectations || [],
     }),
@@ -328,7 +373,9 @@ export default function DossierDetailClient({ dossierId }) {
   }
 
   const openActionDialog = (action) => setDialogAction(action);
-  const visibleActions = Object.entries(ACTIONS).filter(([, action]) => action.roles.includes(role));
+  const visibleActions = Object.entries(ACTIONS).filter(([, action]) =>
+    action.roles.includes(role),
+  );
 
   return (
     <div className="space-y-5">
@@ -347,13 +394,17 @@ export default function DossierDetailClient({ dossierId }) {
             </Button>
             {isOutOfCellScope ? (
               <div>
-                <h1 className="text-xl font-bold tracking-tight">Dossier à accès limité</h1>
+                <h1 className="text-xl font-bold tracking-tight">
+                  Dossier à accès limité
+                </h1>
                 <LimitedAccessMessage />
               </div>
             ) : (
               <>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-xl font-bold tracking-tight">{dossier.reference}</h1>
+                  <h1 className="text-xl font-bold tracking-tight">
+                    {dossier.reference}
+                  </h1>
                   <StatusBadge status={dossier.statutDossier} type="dossier" />
                   {dossier.multiBureaux && (
                     <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] font-medium text-amber-800 dark:text-amber-300">
@@ -361,7 +412,9 @@ export default function DossierDetailClient({ dossierId }) {
                     </span>
                   )}
                 </div>
-                <p className="max-w-4xl text-sm text-muted-foreground">{dossier.objet}</p>
+                <p className="max-w-4xl text-sm text-muted-foreground">
+                  {dossier.objet}
+                </p>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <UsersRound className="size-3.5" />
@@ -370,7 +423,10 @@ export default function DossierDetailClient({ dossierId }) {
                       : "Aucune cellule affectée"}
                   </span>
                   <span>{dossier.provenanceNom}</span>
-                  <span>{formatInstruction(dossier.instructionCabinet)}</span>
+                  <span className=" flex items-center gap-1.5 rounded bg-amber-500/10 px-2 py-1 font-medium text-amber-700 dark:text-amber-300">
+                    <Target size={16} />
+                    {formatInstruction(dossier.instructionCabinet)}
+                  </span>
                 </div>
               </>
             )}
@@ -386,10 +442,23 @@ export default function DossierDetailClient({ dossierId }) {
                     StatutDossier.EN_TRAITEMENT,
                     StatutDossier.ACTIF_APRES_RETOUR,
                   ].includes(dossier.statutDossier)
-                ) return null;
-                if (key === "confierAdjoint" && dossier.statutDossier === StatutDossier.CLOTURE) return null;
-                if (key === "retour" && dossier.statutDossier !== StatutDossier.TRANSMIS) return null;
-                if (key === "clore" && dossier.statutDossier === StatutDossier.CLOTURE) return null;
+                )
+                  return null;
+                if (
+                  key === "confierAdjoint" &&
+                  dossier.statutDossier === StatutDossier.CLOTURE
+                )
+                  return null;
+                if (
+                  key === "retour" &&
+                  dossier.statutDossier !== StatutDossier.TRANSMIS
+                )
+                  return null;
+                if (
+                  key === "clore" &&
+                  dossier.statutDossier === StatutDossier.CLOTURE
+                )
+                  return null;
                 return (
                   <PermissionGate
                     key={key}
@@ -438,59 +507,103 @@ export default function DossierDetailClient({ dossierId }) {
                     {dossier.motsCles?.length ? (
                       <div className="flex flex-wrap gap-2">
                         {dossier.motsCles.map((keyword) => (
-                          <span key={keyword} className="rounded-full border bg-muted/40 px-2.5 py-1 text-xs">
+                          <span
+                            key={keyword}
+                            className="rounded-full border bg-muted/40 px-2.5 py-1 text-xs"
+                          >
                             {keyword}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">Aucun mot-clé renseigné.</p>
+                      <p className="text-sm text-muted-foreground">
+                        Aucun mot-clé renseigné.
+                      </p>
                     )}
                   </CardContent>
                 </Card>
               </>
             ) : (
               <>
-                {dossier.statutDossier === StatutDossier.EN_ATTENTE_AUTRE_BUREAU && (
+                {dossier.statutDossier ===
+                  StatutDossier.EN_ATTENTE_AUTRE_BUREAU && (
                   <div
                     role="status"
                     className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-950 dark:text-amber-200"
                   >
                     <BriefcaseBusiness className="mt-0.5 size-4 shrink-0" />
                     <div>
-                      <p className="font-semibold">En attente d&apos;un autre bureau</p>
+                      <p className="font-semibold">
+                        En attente d&apos;un autre bureau
+                      </p>
                       <p className="mt-1 text-xs">
-                        Le dossier reprendra son circuit après réception effective par le bureau suivant.
-                        {dossier.bureauPrecedent ? ` Bureau précédent : ${dossier.bureauPrecedent}.` : ""}
+                        Le dossier reprendra son circuit après réception
+                        effective par le bureau suivant.
+                        {dossier.bureauPrecedent
+                          ? ` Bureau précédent : ${dossier.bureauPrecedent}.`
+                          : ""}
                       </p>
                     </div>
                   </div>
                 )}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Informations d&apos;enregistrement</CardTitle>
-                    <CardDescription>Données administratives et instruction du dossier.</CardDescription>
+                    <CardTitle className="text-base">
+                      Informations d&apos;enregistrement
+                    </CardTitle>
+                    <CardDescription>
+                      Données administratives et instruction du dossier.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                      <InformationRow label="Référence">{dossier.reference}</InformationRow>
-                      <InformationRow label="Objet">{dossier.objet}</InformationRow>
-                      <InformationRow label="Provenance">{dossier.provenanceNom}</InformationRow>
-                      <InformationRow label="Instruction">{formatInstruction(dossier.instructionCabinet)}</InformationRow>
-                      <InformationRow label="Origine">{formatOrigin(dossier.origine)}</InformationRow>
+                      <InformationRow label="Référence">
+                        {dossier.reference}
+                      </InformationRow>
+                      <InformationRow label="Objet">
+                        {dossier.objet}
+                      </InformationRow>
+                      <InformationRow label="Provenance">
+                        {dossier.provenanceNom}
+                      </InformationRow>
+                      <InformationRow
+                        label="Instruction"
+                        className=" flex items-center gap-1.5 rounded bg-amber-500/10 px-2 py-2 font-medium text-amber-700 dark:text-amber-300"
+                      >
+                        <Target size={16} />
+                        {formatInstruction(dossier.instructionCabinet)}
+                      </InformationRow>
+                      <InformationRow label="Origine">
+                        {formatOrigin(dossier.origine)}
+                      </InformationRow>
                       <InformationRow label="Cellule(s)">
-                        {assignedCells.map((cell) => `${cell.label} (${cell.type === "PRINCIPALE" ? "principale" : "collaboratrice"})`).join(", ") || "Non affecté"}
+                        {assignedCells
+                          .map(
+                            (cell) =>
+                              `${cell.label} (${cell.type === "PRINCIPALE" ? "principale" : "collaboratrice"})`,
+                          )
+                          .join(", ") || "Non affecté"}
                       </InformationRow>
                       <InformationRow label="Transmission par l'institution d'origine">
                         {formatDate(dossier.dateTransmissionOrigine)}
                       </InformationRow>
-                      <InformationRow label="Réception au cabinet">{formatDate(dossier.dateReceptionCabinet)}</InformationRow>
-                      <InformationRow label="Réception au BESD">{formatDate(dossier.dateReceptionBesd)}</InformationRow>
+                      <InformationRow label="Réception au cabinet">
+                        {formatDate(dossier.dateReceptionCabinet)}
+                      </InformationRow>
+                      <InformationRow label="Réception au BESD">
+                        {formatDate(dossier.dateReceptionBesd)}
+                      </InformationRow>
                       {dossier.multiBureaux && (
                         <>
-                          <InformationRow label="Bureau précédent">{dossier.bureauPrecedent}</InformationRow>
-                          <InformationRow label="Rang BESD">{dossier.rangBesd}</InformationRow>
-                          <InformationRow label="Mise en attente">{formatDate(dossier.dateMiseEnAttente)}</InformationRow>
+                          <InformationRow label="Bureau précédent">
+                            {dossier.bureauPrecedent}
+                          </InformationRow>
+                          <InformationRow label="Rang BESD">
+                            {dossier.rangBesd}
+                          </InformationRow>
+                          <InformationRow label="Mise en attente">
+                            {formatDate(dossier.dateMiseEnAttente)}
+                          </InformationRow>
                         </>
                       )}
                     </dl>
@@ -499,19 +612,27 @@ export default function DossierDetailClient({ dossierId }) {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Mots-clés</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <FolderSearch size={18} className="text-secondary" />
+                      Mots-clés
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {dossier.motsCles?.length ? (
                       <div className="flex flex-wrap gap-2">
                         {dossier.motsCles.map((keyword) => (
-                          <span key={keyword} className="rounded-full border bg-muted/40 px-2.5 py-1 text-xs">
+                          <span
+                            key={keyword}
+                            className="rounded-full border bg-muted/40 px-2.5 py-1 text-xs"
+                          >
                             {keyword}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">Aucun mot-clé renseigné.</p>
+                      <p className="text-sm text-muted-foreground">
+                        Aucun mot-clé renseigné.
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -540,17 +661,30 @@ export default function DossierDetailClient({ dossierId }) {
               <div className="space-y-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Cellules rattachées</CardTitle>
-                    <CardDescription>Cellule principale et cellules collaboratrices.</CardDescription>
+                    <CardTitle className="text-base">
+                      Cellules rattachées
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      Cellule principale et cellules collaboratrices.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {assignedCells.length ? (
                       <div className="grid gap-3 sm:grid-cols-2">
                         {assignedCells.map((cell) => (
                           <div key={cell.id} className="rounded-lg border p-3">
-                            <p className="font-medium">{cell.label}</p>
+                            <p className="font-semibold text-primary flex items-center gap-2">
+                              {cell.type === "PRINCIPALE" ? (
+                                <UserStar size={20} />
+                              ) : (
+                                <UsersRoundCollaboration size={20} />
+                              )}
+                              {cell.label}
+                            </p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                              {cell.type === "PRINCIPALE" ? "Cellule principale" : "Cellule collaboratrice"}
+                              {cell.type === "PRINCIPALE"
+                                ? "Cellule principale"
+                                : "Cellule collaboratrice"}
                             </p>
                           </div>
                         ))}
@@ -568,13 +702,18 @@ export default function DossierDetailClient({ dossierId }) {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Historique des affectations</CardTitle>
+                    <CardTitle className="text-base">
+                      Historique des affectations
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {dossier.affectations?.length ? (
                       <div className="space-y-3">
                         {dossier.affectations.map((assignment) => (
-                          <div key={assignment.id} className="grid gap-2 rounded-lg border p-3 sm:grid-cols-[1fr_auto]">
+                          <div
+                            key={assignment.id}
+                            className="grid gap-2 rounded-lg border p-3 sm:grid-cols-[1fr_auto]"
+                          >
                             <div>
                               <p className="text-sm font-medium">
                                 {assignment.destinataire?.code ||
@@ -593,7 +732,9 @@ export default function DossierDetailClient({ dossierId }) {
                                 Par {displayName(assignment.auteur)}
                               </p>
                             </div>
-                            <time className="text-xs text-muted-foreground">{formatDateTime(assignment.date)}</time>
+                            <time className="text-xs text-muted-foreground">
+                              {formatDateTime(assignment.date)}
+                            </time>
                           </div>
                         ))}
                       </div>
@@ -620,10 +761,14 @@ export default function DossierDetailClient({ dossierId }) {
                   <Card key={cycle.id}>
                     <CardHeader>
                       <CardTitle className="text-base">
-                        {cycle.numeroCycle === 1 ? "Cycle initial" : `Cycle ${cycle.numeroCycle}`}
+                        {cycle.numeroCycle === 1
+                          ? "Cycle initial"
+                          : `Cycle ${cycle.numeroCycle}`}
                       </CardTitle>
                       <CardDescription>
-                        {cycle.typeSuite === "INITIAL" ? "Traitement initial" : `Suite : ${cycle.typeSuite.replaceAll("_", " ").toLowerCase()}`}
+                        {cycle.typeSuite === "INITIAL"
+                          ? "Traitement initial"
+                          : `Suite : ${cycle.typeSuite.replaceAll("_", " ").toLowerCase()}`}
                         {" · Ouvert le "}
                         {formatDate(cycle.dateOuverture)}
                       </CardDescription>
@@ -634,41 +779,66 @@ export default function DossierDetailClient({ dossierId }) {
                           <div key={note.id} className="rounded-lg border p-3">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                               <div className="min-w-0 space-y-1.5">
-                                <p className="font-medium">{DOCUMENT_LABELS[note.typeDocument] || note.typeDocument}</p>
-                                <p className="text-xs text-muted-foreground">Destinataire : {note.destinataire || "—"}</p>
-                                <p className="text-xs text-muted-foreground">Rédacteur : {displayName(note.redacteur)}</p>
+                                <p className="font-medium flex items-center gap-2">
+                                  <NotepadText
+                                    size={20}
+                                    className="text-secondary"
+                                  />
+                                  {DOCUMENT_LABELS[note.typeDocument] ||
+                                    note.typeDocument}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Destinataire : {note.destinataire || "—"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Rédacteur : {displayName(note.redacteur)}
+                                </p>
                                 {note.numeroOfficiel && (
-                                  <p className="text-xs text-muted-foreground">Numéro officiel : {note.numeroOfficiel}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Numéro officiel : {note.numeroOfficiel}
+                                  </p>
                                 )}
                               </div>
                               <StatusBadge
                                 status={note.statutNote}
                                 type="note"
-                                size="sm"
+                                size="md"
+                                className="py-3"
                               />
                             </div>
                             {isSecretariat ? (
                               <div className="mt-3 rounded-md border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground">
-                                Consultation limitée à la première page de la note.
+                                Consultation limitée à la première page de la
+                                note.
                                 {note.premierePagePdfUrl ? (
                                   <div className="mt-3">
                                     <PdfFirstPageViewer
                                       src={note.premierePagePdfUrl}
                                       title="Première page de la note"
-                                      reference={note.numeroOfficiel || dossier.reference}
+                                      reference={
+                                        note.numeroOfficiel || dossier.reference
+                                      }
                                     />
                                   </div>
                                 ) : (
-                                  <p className="mt-1">Aucun aperçu de première page n&apos;est disponible dans les données de démonstration.</p>
+                                  <p className="mt-1">
+                                    Aucun aperçu de première page n&apos;est
+                                    disponible dans les données de
+                                    démonstration.
+                                  </p>
                                 )}
                               </div>
                             ) : (
                               <Button
                                 type="button"
                                 variant="outline"
-                                size="sm"
-                                className="mt-3"
-                                onClick={() => router.push(`/dossiers/${dossier.id}/notes/${note.id}`)}
+                                size="lg"
+                                className="mt-3 hover:bg-secondary hover:text-secondary-foreground"
+                                onClick={() =>
+                                  router.push(
+                                    `/dossiers/${dossier.id}/notes/${note.id}`,
+                                  )
+                                }
                               >
                                 Consulter la note
                                 <ArrowRight className="size-3.5" />
@@ -700,8 +870,12 @@ export default function DossierDetailClient({ dossierId }) {
           <TabsContent value="historique" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Historique du dossier</CardTitle>
-                <CardDescription>Frise chronologique des mouvements de traçabilité.</CardDescription>
+                <CardTitle className="text-base">
+                  Historique du dossier
+                </CardTitle>
+                <CardDescription>
+                  Frise chronologique des mouvements de traçabilité.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <HistoryTimeline movements={dossier.mouvements || []} />
@@ -714,7 +888,8 @@ export default function DossierDetailClient({ dossierId }) {
               <LimitedAccessMessage />
             ) : !canSeeAccessTab ? (
               <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
-                L&apos;onglet Accès est réservé au Chef de bureau et à son adjoint.
+                L&apos;onglet Accès est réservé au Chef de bureau et à son
+                adjoint.
               </div>
             ) : (
               <div className="space-y-4">
@@ -724,18 +899,30 @@ export default function DossierDetailClient({ dossierId }) {
                       <KeyRound className="size-4" />
                       Accès exceptionnels
                     </CardTitle>
-                    <CardDescription>Accès accordés à des utilisateurs hors périmètre habituel.</CardDescription>
+                    <CardDescription>
+                      Accès accordés à des utilisateurs hors périmètre habituel.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {dossier.accesExceptionnels?.length ? (
                       <div className="space-y-3">
                         {dossier.accesExceptionnels.map((access) => (
-                          <div key={access.id} className="rounded-lg border p-3">
-                            <p className="text-sm font-medium">{displayName(access.beneficiaire)}</p>
-                            <p className="mt-1 text-xs text-muted-foreground">{access.motif}</p>
+                          <div
+                            key={access.id}
+                            className="rounded-lg border p-3"
+                          >
+                            <p className="text-sm font-medium">
+                              {displayName(access.beneficiaire)}
+                            </p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                              Accordé par {displayName(access.accordePar)} · {formatDate(access.date)}
-                              {access.echeance ? ` · Échéance : ${formatDate(access.echeance)}` : ""}
+                              {access.motif}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Accordé par {displayName(access.accordePar)} ·{" "}
+                              {formatDate(access.date)}
+                              {access.echeance
+                                ? ` · Échéance : ${formatDate(access.echeance)}`
+                                : ""}
                             </p>
                           </div>
                         ))}
@@ -757,16 +944,21 @@ export default function DossierDetailClient({ dossierId }) {
                       <UserRound className="size-4" />
                       Prises en charge
                     </CardTitle>
-                    <CardDescription>Délégations de suivi confiées à un adjoint.</CardDescription>
+                    <CardDescription>
+                      Délégations de suivi confiées à un adjoint.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {dossier.prisesEnCharge?.length ? (
                       <div className="space-y-3">
                         {dossier.prisesEnCharge.map((prise) => (
                           <div key={prise.id} className="rounded-lg border p-3">
-                            <p className="text-sm font-medium">{displayName(prise.adjoint)}</p>
+                            <p className="text-sm font-medium">
+                              {displayName(prise.adjoint)}
+                            </p>
                             <p className="mt-1 text-xs text-muted-foreground">
-                              Titulaire : {displayName(prise.titulaire)} · Accordée le {formatDateTime(prise.dateHeure)}
+                              Titulaire : {displayName(prise.titulaire)} ·
+                              Accordée le {formatDateTime(prise.dateHeure)}
                             </p>
                             <p className="mt-1 text-xs text-muted-foreground">
                               {prise.active ? "Active" : "Terminée"}
@@ -795,7 +987,9 @@ export default function DossierDetailClient({ dossierId }) {
               <MessageSquareText className="size-4 text-primary" />
               Note en cours
             </CardTitle>
-            <CardDescription>Prochaine étape du circuit de traitement.</CardDescription>
+            <CardDescription>
+              Prochaine étape du circuit de traitement.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {isOutOfCellScope ? (
@@ -804,18 +998,24 @@ export default function DossierDetailClient({ dossierId }) {
               <>
                 <div>
                   <p className="text-sm font-semibold">
-                    {DOCUMENT_LABELS[currentNote.typeDocument] || currentNote.typeDocument}
+                    {DOCUMENT_LABELS[currentNote.typeDocument] ||
+                      currentNote.typeDocument}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">{currentNote.destinataire || "Destinataire non précisé"}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {currentNote.destinataire || "Destinataire non précisé"}
+                  </p>
                 </div>
                 <StatusBadge
                   status={currentNote.statutNote}
                   type="note"
-                  size="sm"
+                  size="md"
+                  className="py-3"
                 />
                 <div className="space-y-3 rounded-lg bg-muted/30 p-3">
                   {isSecretariat ? (
-                    <InformationRow label="Document consultable">Première page uniquement</InformationRow>
+                    <InformationRow label="Document consultable">
+                      Première page uniquement
+                    </InformationRow>
                   ) : (
                     <InformationRow label="Dernière version">
                       {latestVersion
@@ -823,12 +1023,17 @@ export default function DossierDetailClient({ dossierId }) {
                         : "Aucune version déposée"}
                     </InformationRow>
                   )}
-                  <InformationRow label="Prochaine action">{nextAction.action}</InformationRow>
-                  <InformationRow label="Responsable attendu">{nextAction.owner}</InformationRow>
+                  <InformationRow label="Prochaine action">
+                    {nextAction.action}
+                  </InformationRow>
+                  <InformationRow label="Responsable attendu">
+                    {nextAction.owner}
+                  </InformationRow>
                 </div>
                 {isSecretariat ? (
                   <p className="text-xs text-muted-foreground">
-                    Le secrétariat consulte uniquement la première page des notes.
+                    Le secrétariat consulte uniquement la première page des
+                    notes.
                   </p>
                 ) : (
                   <PermissionGate
@@ -838,9 +1043,13 @@ export default function DossierDetailClient({ dossierId }) {
                   >
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="secondary"
                       className="w-full"
-                      onClick={() => router.push(`/dossiers/${dossier.id}/notes/${currentNote.id}`)}
+                      onClick={() =>
+                        router.push(
+                          `/dossiers/${dossier.id}/notes/${currentNote.id}`,
+                        )
+                      }
                     >
                       Ouvrir la note
                       <ArrowRight className="size-4" />
@@ -875,10 +1084,15 @@ export default function DossierDetailClient({ dossierId }) {
         </Card>
       </div>
 
-      <Dialog open={Boolean(dialogAction)} onOpenChange={(open) => !open && setDialogAction(null)}>
+      <Dialog
+        open={Boolean(dialogAction)}
+        onOpenChange={(open) => !open && setDialogAction(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{dialogAction?.label || "Action sur le dossier"}</DialogTitle>
+            <DialogTitle>
+              {dialogAction?.label || "Action sur le dossier"}
+            </DialogTitle>
             <DialogDescription>
               Cette action sera construite à une prochaine étape.
             </DialogDescription>
@@ -887,7 +1101,11 @@ export default function DossierDetailClient({ dossierId }) {
             Le formulaire de cette action n&apos;est pas encore disponible.
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setDialogAction(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDialogAction(null)}
+            >
               Fermer
             </Button>
           </DialogFooter>

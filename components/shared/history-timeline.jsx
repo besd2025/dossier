@@ -160,7 +160,7 @@ export function HistoryTimeline({
   // Tri antichronologique (le plus récent en premier)
   const sortedMovements = React.useMemo(() => {
     return [...movements].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
   }, [movements]);
 
@@ -173,7 +173,9 @@ export function HistoryTimeline({
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const descMatch = (mvt.description || "").toLowerCase().includes(query);
-        const authorMatch = (mvt.auteurNom || mvt.auteur || "").toLowerCase().includes(query);
+        const authorMatch = (mvt.auteurNom || mvt.auteur || "")
+          .toLowerCase()
+          .includes(query);
         return descMatch || authorMatch;
       }
       return true;
@@ -201,18 +203,29 @@ export function HistoryTimeline({
             </div>
 
             <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="h-8 text-xs w-48 bg-background">
+              <SelectTrigger className="h-max w-48 bg-background">
                 <Filter className="size-3.5 mr-1.5 text-muted-foreground" />
                 <SelectValue placeholder="Tous les types" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Tous les types ({sortedMovements.length})</SelectItem>
+              <SelectContent className="p-1 py-2">
+                <SelectItem
+                  value="ALL"
+                  className="text-xs text-muted-foreground"
+                >
+                  Tous les types ({sortedMovements.length})
+                </SelectItem>
                 {Object.keys(MOUVEMENT_CONFIG).map((typeKey) => {
                   const cfg = MOUVEMENT_CONFIG[typeKey];
-                  const count = sortedMovements.filter((m) => m.typeMouvement === typeKey).length;
+                  const count = sortedMovements.filter(
+                    (m) => m.typeMouvement === typeKey,
+                  ).length;
                   if (count === 0) return null;
                   return (
-                    <SelectItem key={typeKey} value={typeKey} className="text-xs">
+                    <SelectItem
+                      key={typeKey}
+                      value={typeKey}
+                      className="text-sm"
+                    >
                       {cfg.label} ({count})
                     </SelectItem>
                   );
@@ -231,7 +244,9 @@ export function HistoryTimeline({
       {displayedMovements.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-8 text-center border rounded-lg bg-muted/20 border-dashed">
           <History className="size-8 text-muted-foreground/60 mb-2" />
-          <p className="text-xs font-medium text-foreground">Aucun mouvement trouvé</p>
+          <p className="text-xs font-medium text-foreground">
+            Aucun mouvement trouvé
+          </p>
           <p className="text-[11px] text-muted-foreground mt-0.5">
             Aucun événement ne correspond aux filtres appliqués.
           </p>
@@ -250,7 +265,7 @@ export function HistoryTimeline({
           )}
         </div>
       ) : (
-        <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-border/80">
+        <div className="relative pl-6 space-y-6 before:absolute before:left-4.5 before:top-2 before:bottom-2 before:w-[3px] before:bg-border/70">
           {displayedMovements.map((mvt) => {
             const config = MOUVEMENT_CONFIG[mvt.typeMouvement] || {
               label: mvt.typeMouvement,
@@ -259,7 +274,8 @@ export function HistoryTimeline({
               bg: "bg-muted border-border",
             };
             const Icon = config.icon;
-            const isConsultationAdjoint = mvt.typeMouvement === TypeMouvement.CONSULTATION_ADJOINT;
+            const isConsultationAdjoint =
+              mvt.typeMouvement === TypeMouvement.CONSULTATION_ADJOINT;
             const isReopening = mvt.typeMouvement === TypeMouvement.REOUVERTURE;
 
             return (
@@ -270,30 +286,32 @@ export function HistoryTimeline({
                   isConsultationAdjoint &&
                     "p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 shadow-xs",
                   isReopening &&
-                    "p-3 rounded-lg border border-red-500/30 bg-red-500/5 shadow-xs"
+                    "p-3 rounded-lg border border-red-500/30 bg-red-500/5 shadow-xs",
                 )}
               >
                 {/* Pastille icône sur l'axe vertical */}
                 <div
                   className={cn(
-                    "absolute -left-6 top-0.5 flex size-5.5 items-center justify-center rounded-full border shadow-xs transition-transform group-hover:scale-110",
+                    "absolute -left-6 top-0.5 flex size-10 items-center justify-center rounded-full border shadow-xs transition-transform group-hover:scale-110",
                     config.bg,
-                    isConsultationAdjoint ? "bg-amber-500 text-white" : config.color
+                    isConsultationAdjoint
+                      ? "bg-amber-500 text-white"
+                      : config.color,
                   )}
                   title={config.label}
                 >
-                  <Icon className="size-3" />
+                  <Icon className="size-4" />
                 </div>
 
                 {/* Contenu de la ligne */}
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 ml-6">
                   <div className="flex flex-wrap items-center justify-between gap-1.5 text-xs">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-foreground text-xs">
+                      <span className="font-semibold text-foreground text-sm">
                         {mvt.auteurNom || mvt.auteur || "Utilisateur"}
                       </span>
                       {mvt.auteurRole && (
-                        <span className="text-[10px] text-muted-foreground font-mono">
+                        <span className="text-xs text-muted-foreground ">
                           ({mvt.auteurRole})
                         </span>
                       )}
@@ -302,7 +320,7 @@ export function HistoryTimeline({
                         className={cn(
                           "text-[10px] font-medium px-1.5 py-0 h-4 rounded-sm border",
                           config.bg,
-                          config.color
+                          config.color,
                         )}
                       >
                         {config.label}
@@ -321,7 +339,7 @@ export function HistoryTimeline({
 
                     <time
                       dateTime={mvt.date}
-                      className="text-[11px] font-mono text-muted-foreground tabular-nums"
+                      className="text-[11px] text-muted-foreground "
                     >
                       {formatDateTime(mvt.date)}
                     </time>
@@ -349,4 +367,3 @@ export function HistoryTimeline({
 }
 
 export default HistoryTimeline;
-
