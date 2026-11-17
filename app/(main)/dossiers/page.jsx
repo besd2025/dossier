@@ -179,7 +179,7 @@ export default function DossiersPage() {
         accessorKey: "statutDossier",
         header: "Statut",
         cell: ({ row }) => (
-          <StatusBadge status={row.getValue("statutDossier")} type="dossier" />
+          <StatusBadge status={row.getValue("statutDossier")} type="dossier" size="md" />
         ),
       },
       {

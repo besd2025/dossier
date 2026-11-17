@@ -260,7 +260,7 @@ export function AssignDialog({
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl p-6">
         <DialogHeader>
           <DialogTitle>
             {step === "review"
@@ -345,7 +345,10 @@ export function AssignDialog({
                           <SelectValue placeholder="Aucun conseiller préféré" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">
+                          <SelectItem
+                            value="none"
+                            className="text-xs text-muted-foreground"
+                          >
                             Aucun conseiller préféré
                           </SelectItem>
                           {preferredCandidates.map((candidate) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, RefreshCw, Undo2 } from "lucide-react";
+import { Plus, RefreshCw, Search, Undo2, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { PermissionGate } from "@/components/permission-gate";
@@ -56,7 +56,11 @@ function formatDate(value) {
 export default function RetoursCabinetClient() {
   const user = useSessionStore((state) => state.currentUser || state.user);
   const [rows, setRows] = useState([]);
-  const [options, setOptions] = useState({ dossiers: [], notes: [], provenances: [] });
+  const [options, setOptions] = useState({
+    dossiers: [],
+    notes: [],
+    provenances: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
@@ -84,7 +88,9 @@ export default function RetoursCabinetClient() {
       setRows(returns);
       setOptions(returnOptions);
     } catch (loadError) {
-      setError(loadError?.message || "Impossible de charger les retours du cabinet.");
+      setError(
+        loadError?.message || "Impossible de charger les retours du cabinet.",
+      );
     } finally {
       setLoading(false);
     }
@@ -97,57 +103,64 @@ export default function RetoursCabinetClient() {
 
   const notesForDossier = useMemo(
     () => options.notes.filter((note) => note.dossierId === dossierId),
-    [options.notes, dossierId]
+    [options.notes, dossierId],
   );
-  const columns = useMemo(() => [
-    {
-      id: "dossier",
-      accessorFn: (row) => row.dossier?.reference || "Sans référence",
-      header: "Dossier",
-      cell: ({ row }) => (
-        <div>
-          <p className="font-mono text-xs font-semibold text-primary">
-            {row.original.dossier?.reference || "Sans référence"}
-          </p>
-          <p className="mt-1 max-w-[20rem] truncate text-xs text-muted-foreground">
-            {row.original.dossier?.objet || "Dossier BESD créé à l’enregistrement"}
-          </p>
-        </div>
-      ),
-    },
-    {
-      id: "note",
-      accessorFn: (row) => row.noteOrigine?.id || "",
-      header: "Note d'origine",
-      cell: ({ row }) => row.original.noteOrigine?.id || "—",
-    },
-    {
-      accessorKey: "typeSuite",
-      header: "Type de suite",
-      cell: ({ row }) => SUITE_LABELS[row.original.typeSuite] || row.original.typeSuite,
-    },
-    {
-      accessorKey: "date",
-      header: "Date",
-      cell: ({ row }) => formatDate(row.original.date),
-    },
-    {
-      id: "bureaux",
-      accessorFn: (row) => (row.bureauxCollaboration || []).join(", "),
-      header: "Bureaux en collaboration",
-      cell: ({ row }) => (row.original.bureauxCollaboration || []).join(", ") || "—",
-    },
-    {
-      id: "cycle",
-      accessorFn: (row) => row.nouveauCycle?.numeroCycle ?? "",
-      header: "Nouveau cycle",
-      cell: ({ row }) => (
-        <span>
-          Cycle {row.original.nouveauCycle?.numeroCycle ?? "—"} · {row.original.dossier?.statutDossier || "Ouvert"}
-        </span>
-      ),
-    },
-  ], []);
+  const columns = useMemo(
+    () => [
+      {
+        id: "dossier",
+        accessorFn: (row) => row.dossier?.reference || "Sans référence",
+        header: "Dossier",
+        cell: ({ row }) => (
+          <div>
+            <p className="text-sm font-semibold text-primary">
+              {row.original.dossier?.reference || "Sans référence"}
+            </p>
+            <p className="mt-1 max-w-[20rem] truncate text-xs text-muted-foreground">
+              {row.original.dossier?.objet ||
+                "Dossier BESD créé à l’enregistrement"}
+            </p>
+          </div>
+        ),
+      },
+      {
+        id: "note",
+        accessorFn: (row) => row.noteOrigine?.id || "",
+        header: "Note d'origine",
+        cell: ({ row }) => row.original.noteOrigine?.id || "—",
+      },
+      {
+        accessorKey: "typeSuite",
+        header: "Type de suite",
+        cell: ({ row }) =>
+          SUITE_LABELS[row.original.typeSuite] || row.original.typeSuite,
+      },
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: ({ row }) => formatDate(row.original.date),
+      },
+      {
+        id: "bureaux",
+        accessorFn: (row) => (row.bureauxCollaboration || []).join(", "),
+        header: "Bureaux en collaboration",
+        cell: ({ row }) =>
+          (row.original.bureauxCollaboration || []).join(", ") || "—",
+      },
+      {
+        id: "cycle",
+        accessorFn: (row) => row.nouveauCycle?.numeroCycle ?? "",
+        header: "Nouveau cycle",
+        cell: ({ row }) => (
+          <span>
+            Cycle {row.original.nouveauCycle?.numeroCycle ?? "—"} ·{" "}
+            {row.original.dossier?.statutDossier || "Ouvert"}
+          </span>
+        ),
+      },
+    ],
+    [],
+  );
 
   function resetForm() {
     setSansDossierPrealable(false);
@@ -164,7 +177,8 @@ export default function RetoursCabinetClient() {
 
   async function handleSave(event) {
     event.preventDefault();
-    if (saving || (!sansDossierPrealable && (!dossierId || !noteOrigineId))) return;
+    if (saving || (!sansDossierPrealable && (!dossierId || !noteOrigineId)))
+      return;
     setSaving(true);
     try {
       const result = await createCabinetReturn(
@@ -174,15 +188,20 @@ export default function RetoursCabinetClient() {
           noteOrigineId,
           typeSuite,
           date,
-          bureauxCollaboration: bureaux.split(",").map((value) => value.trim()).filter(Boolean),
+          bureauxCollaboration: bureaux
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean),
           commentaire,
           objet,
           provenanceNom,
           provenanceId,
         },
-        user?.id
+        user?.id,
       );
-      toast.success(`Retour enregistré. Le cycle ${result.nouveauCycle?.numeroCycle || 1} est ouvert.`);
+      toast.success(
+        `Retour enregistré. Le cycle ${result.nouveauCycle?.numeroCycle || 1} est ouvert.`,
+      );
       setDialogOpen(false);
       resetForm();
       await loadData();
@@ -201,13 +220,20 @@ export default function RetoursCabinetClient() {
             <Undo2 className="size-4" />
             Secrétariat
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Retours du cabinet</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Retours du cabinet
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Enregistrez le retour et ouvrez un nouveau cycle de traitement.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" disabled={loading} onClick={() => setReloadKey((key) => key + 1)}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={loading}
+            onClick={() => setReloadKey((key) => key + 1)}
+          >
             <RefreshCw className="size-4" />
             Actualiser
           </Button>
@@ -252,16 +278,19 @@ export default function RetoursCabinetClient() {
           if (!saving) setDialogOpen(open);
         }}
       >
-        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-3xl p-6">
           <form onSubmit={handleSave} className="space-y-5">
             <DialogHeader>
-              <DialogTitle>Enregistrer un retour du cabinet</DialogTitle>
-              <DialogDescription>
-                Un nouveau cycle sera créé et visible dans la fiche dossier et son historique.
+              <DialogTitle className="text-lg font-semibold">
+                Enregistrer un retour du cabinet
+              </DialogTitle>
+              <DialogDescription className="text-sm">
+                Un nouveau cycle sera créé et visible dans la fiche dossier et
+                son historique.
               </DialogDescription>
             </DialogHeader>
 
-            <label className="flex items-start gap-3 rounded-lg border p-3 text-sm">
+            <label className="flex items-center gap-3 rounded-lg border p-3.5 text-sm bg-muted/20 hover:bg-muted/30 cursor-pointer transition-colors">
               <input
                 type="checkbox"
                 checked={sansDossierPrealable}
@@ -273,17 +302,25 @@ export default function RetoursCabinetClient() {
                 className="mt-0.5 size-4 accent-primary"
               />
               <span>
-                <span className="block font-medium">Retour sans dossier BESD préalable</span>
-                <span className="mt-1 block text-muted-foreground">
-                  Créer un dossier avec l’origine « Retour du cabinet sans dossier préalable ».
+                <span className="block font-medium">
+                  Retour sans dossier BESD préalable
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Créer un dossier avec l’origine « Retour du cabinet sans
+                  dossier préalable ».
                 </span>
               </span>
             </label>
 
             {!sansDossierPrealable ? (
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <label htmlFor="return-dossier" className="text-sm font-medium">Dossier</label>
+                <div className="flex flex-col space-y-2">
+                  <label
+                    htmlFor="return-dossier"
+                    className="text-sm font-medium"
+                  >
+                    Dossier <span className="text-destructive">*</span>
+                  </label>
                   <Select
                     value={dossierId}
                     onValueChange={(val) => {
@@ -291,31 +328,67 @@ export default function RetoursCabinetClient() {
                       setNoteOrigineId("");
                     }}
                   >
-                    <SelectTrigger id="return-dossier" className="h-9 w-full bg-background px-3 text-sm">
+                    <SelectTrigger
+                      id="return-dossier"
+                      className="h-10 w-full bg-background px-3 text-sm"
+                    >
                       <SelectValue placeholder="Sélectionner un dossier…" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-72 w-full px-3 py-3">
+                      <div className="relative w-full sm:w-64 mb-2">
+                        <Search className="absolute left-2.5 top-2.5 size-3.5 text-primary" />
+                        <Input
+                          placeholder="Rechercher un note"
+                          //      value={currentSearchValue}
+                          // onChange={(e) => handleSearchChange(e.target.value)}
+                          className="h-8 pl-8 pr-7 text-xs bg-background"
+                        />
+                        {/* {currentSearchValue && ( */}
+                        <button
+                          type="button"
+                          onClick={() => handleSearchChange("")}
+                          className="absolute right-2 top-2 size-4 text-muted-foreground hover:text-foreground inline-flex items-center justify-center rounded-xs"
+                          aria-label="Effacer la recherche"
+                        >
+                          <X className="size-3" />
+                        </button>
+                        {/* )} */}
+                      </div>
                       {options.dossiers.map((dossier) => (
-                        <SelectItem key={dossier.id} value={dossier.id} className="text-xs">
+                        <SelectItem
+                          key={dossier.id}
+                          value={dossier.id}
+                          className="text-sm"
+                        >
                           {dossier.reference} — {dossier.objet}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="return-note" className="text-sm font-medium">Note d&apos;origine renvoyée</label>
+                <div className="flex flex-col space-y-2">
+                  <label htmlFor="return-note" className="text-sm font-medium">
+                    Note d&apos;origine renvoyée{" "}
+                    <span className="text-destructive">*</span>
+                  </label>
                   <Select
                     value={noteOrigineId}
                     onValueChange={setNoteOrigineId}
                     disabled={!dossierId}
                   >
-                    <SelectTrigger id="return-note" className="h-9 w-full bg-background px-3 text-sm disabled:opacity-50">
+                    <SelectTrigger
+                      id="return-note"
+                      className="h-10 w-full bg-background px-3 text-sm disabled:opacity-50"
+                    >
                       <SelectValue placeholder="Sélectionner une note…" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-72 w-full px-1 py-1">
                       {notesForDossier.map((note) => (
-                        <SelectItem key={note.id} value={note.id} className="text-xs">
+                        <SelectItem
+                          key={note.id}
+                          value={note.id}
+                          className="text-sm"
+                        >
                           {note.id} · {note.typeDocument}
                         </SelectItem>
                       ))}
@@ -325,29 +398,57 @@ export default function RetoursCabinetClient() {
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label htmlFor="return-object" className="text-sm font-medium">Objet du nouveau dossier</label>
-                  <Input id="return-object" value={objet} onChange={(event) => setObjet(event.target.value)} required />
+                <div className="flex flex-col space-y-2 sm:col-span-2">
+                  <label
+                    htmlFor="return-object"
+                    className="text-sm font-medium"
+                  >
+                    Objet du nouveau dossier{" "}
+                    <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    id="return-object"
+                    className="h-10 text-sm"
+                    value={objet}
+                    onChange={(event) => setObjet(event.target.value)}
+                    required
+                  />
                 </div>
-                <div className="space-y-1.5">
-                  <label htmlFor="return-provenance" className="text-sm font-medium">Provenance</label>
+                <div className="flex flex-col space-y-2">
+                  <label
+                    htmlFor="return-provenance"
+                    className="text-sm font-medium"
+                  >
+                    Provenance
+                  </label>
                   <Select
                     value={provenanceId}
                     onValueChange={(val) => {
-                      const selected = options.provenances.find((item) => item.id === val);
+                      const selected = options.provenances.find(
+                        (item) => item.id === val,
+                      );
                       setProvenanceId(val);
                       setProvenanceNom(selected?.nom || "");
                     }}
                   >
-                    <SelectTrigger id="return-provenance" className="h-9 w-full bg-background px-3 text-sm">
+                    <SelectTrigger
+                      id="return-provenance"
+                      className="h-10 w-full bg-background px-3 text-sm"
+                    >
                       <SelectValue placeholder="Sélectionner une provenance…" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {options.provenances.filter((item) => item.actif).map((item) => (
-                        <SelectItem key={item.id} value={item.id} className="text-xs">
-                          {item.nom}
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="max-h-72 w-full px-1 py-1">
+                      {options.provenances
+                        .filter((item) => item.actif)
+                        .map((item) => (
+                          <SelectItem
+                            key={item.id}
+                            value={item.id}
+                            className="text-sm"
+                          >
+                            {item.nom}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -355,56 +456,92 @@ export default function RetoursCabinetClient() {
             )}
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label htmlFor="return-type" className="text-sm font-medium">Type de suite attendu</label>
+              <div className="flex flex-col space-y-2">
+                <label htmlFor="return-type" className="text-sm font-medium">
+                  Type de suite attendu
+                </label>
                 <Select value={typeSuite} onValueChange={setTypeSuite}>
-                  <SelectTrigger id="return-type" className="h-9 w-full bg-background px-3 text-sm">
+                  <SelectTrigger
+                    id="return-type"
+                    className="h-10 w-full bg-background px-3 text-sm"
+                  >
                     <SelectValue placeholder="Type de suite" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="DESCENTE" className="text-xs">Descente</SelectItem>
-                    <SelectItem value="PROJET_LETTRE" className="text-xs">Projet de lettre</SelectItem>
-                    <SelectItem value="AUTRE" className="text-xs">Autre</SelectItem>
+                  <SelectContent className="max-h-72 px-1 py-1">
+                    <SelectItem value="DESCENTE" className="text-sm">
+                      Descente
+                    </SelectItem>
+                    <SelectItem value="PROJET_LETTRE" className="text-sm">
+                      Projet de lettre
+                    </SelectItem>
+                    <SelectItem value="AUTRE" className="text-sm">
+                      Autre
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5">
-                <label htmlFor="return-date" className="text-sm font-medium">Date du retour</label>
-                <Input id="return-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} required />
+              <div className="flex flex-col space-y-2">
+                <label htmlFor="return-date" className="text-sm font-medium">
+                  Date du retour <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="return-date"
+                  className="h-10 text-sm"
+                  type="date"
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                  required
+                />
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="flex flex-col space-y-2">
               <label htmlFor="return-bureaux" className="text-sm font-medium">
                 Bureaux en collaboration
               </label>
               <Input
                 id="return-bureaux"
+                className="h-10 text-sm"
                 value={bureaux}
                 onChange={(event) => setBureaux(event.target.value)}
                 placeholder="Ex. Bureau Asie-Pacifique, Bureau juridique"
               />
-              <p className="text-xs text-muted-foreground">Séparez les bureaux par une virgule.</p>
+              <p className="text-xs text-muted-foreground">
+                Séparez les bureaux par une virgule.
+              </p>
             </div>
-            <div className="space-y-1.5">
-              <label htmlFor="return-comment" className="text-sm font-medium">Commentaire</label>
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="return-comment" className="text-sm font-medium">
+                Commentaire
+              </label>
               <textarea
                 id="return-comment"
                 value={commentaire}
                 onChange={(event) => setCommentaire(event.target.value)}
                 rows={3}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full rounded-md border border-input bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" disabled={saving} onClick={() => setDialogOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={saving}
+                onClick={() => setDialogOpen(false)}
+              >
                 Annuler
               </Button>
               <PermissionGate ability="enregistrer_retour">
                 <Button
                   type="submit"
-                  disabled={saving || !date || (sansDossierPrealable ? !objet.trim() : !dossierId || !noteOrigineId)}
+                  disabled={
+                    saving ||
+                    !date ||
+                    (sansDossierPrealable
+                      ? !objet.trim()
+                      : !dossierId || !noteOrigineId)
+                  }
                 >
                   {saving ? "Enregistrement…" : "Enregistrer le retour"}
                 </Button>

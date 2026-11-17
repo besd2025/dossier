@@ -161,7 +161,7 @@ export default function CachetsClient() {
       accessorFn: getReference,
       header: "Dossier",
       cell: ({ row }) => (
-        <span className="font-mono text-xs font-semibold text-primary">
+        <span className="text-xs font-semibold text-primary">
           {getReference(row.original)}
         </span>
       ),
@@ -192,7 +192,7 @@ export default function CachetsClient() {
     {
       accessorKey: "statutNote",
       header: "Statut",
-      cell: ({ row }) => <StatusBadge type="note" status={row.original.statutNote} size="sm" />,
+      cell: ({ row }) => <StatusBadge type="note" status={row.original.statutNote} size="md" />,
     },
     {
       id: "action",
@@ -291,26 +291,46 @@ export default function CachetsClient() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          ["Notes signées à cacheter", queues.toStamp.length],
-          ["À transmettre au cabinet", queues.toTransmit.length],
-          ["Projets de lettre à récupérer", queues.lettersToRecover.length],
-        ].map(([label, count]) => (
+          ["Notes signées à cacheter", queues.toStamp.length, Stamp],
+          ["À transmettre au cabinet", queues.toTransmit.length, Send],
+          ["Projets de lettre à récupérer", queues.lettersToRecover.length, FileText],
+        ].map(([label, count, Icon]) => (
           <Card key={label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-2xl font-semibold tabular-nums">
-              {loading ? "—" : count}
+            <CardContent className="flex items-center justify-between p-4">
+              <div>
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">
+                  {loading ? "—" : count}
+                </p>
+              </div>
+              <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                <Icon className="size-5" aria-hidden="true" />
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <Tabs defaultValue="to-stamp" className="space-y-4">
-        <TabsList className="h-auto w-full flex-wrap justify-start sm:w-auto">
-          <TabsTrigger value="to-stamp">Notes signées à cacheter</TabsTrigger>
-          <TabsTrigger value="to-transmit">À transmettre au cabinet</TabsTrigger>
-          <TabsTrigger value="letters">Projets de lettre à récupérer</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-1 sm:w-fit sm:grid-cols-3">
+          <TabsTrigger value="to-stamp" className="gap-2 px-3.5 py-2 text-sm">
+            Notes signées à cacheter
+            <span className="rounded-full bg-muted/70 px-2 py-0.5 text-xs font-medium">
+              {queues.toStamp.length}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="to-transmit" className="gap-2 px-3.5 py-2 text-sm">
+            À transmettre au cabinet
+            <span className="rounded-full bg-muted/70 px-2 py-0.5 text-xs font-medium">
+              {queues.toTransmit.length}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="letters" className="gap-2 px-3.5 py-2 text-sm">
+            Projets de lettre à récupérer
+            <span className="rounded-full bg-muted/70 px-2 py-0.5 text-xs font-medium">
+              {queues.lettersToRecover.length}
+            </span>
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="to-stamp">
           {renderTable(
@@ -348,11 +368,11 @@ export default function CachetsClient() {
           }
         }}
       >
-        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-3xl p-6">
           <form onSubmit={saveStamp} className="space-y-5">
             <DialogHeader>
-              <DialogTitle>Enregistrer le cachet</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-lg font-semibold">Enregistrer le cachet</DialogTitle>
+              <DialogDescription className="text-sm">
                 Le numéro est généré automatiquement. Téléversez uniquement la première page signée et cachetée.
               </DialogDescription>
             </DialogHeader>
@@ -360,12 +380,13 @@ export default function CachetsClient() {
             {selectedNote && (
               <>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <label htmlFor="official-number" className="text-sm font-medium">
                       Numéro officiel
                     </label>
                     <Input
                       id="official-number"
+                      className="h-10 text-sm font-medium bg-muted/30"
                       value={officialNumber || "Génération en cours…"}
                       readOnly
                       aria-describedby="official-number-help"
@@ -374,10 +395,11 @@ export default function CachetsClient() {
                       Généré automatiquement — à reporter sur le document papier
                     </p>
                   </div>
-                  <div className="space-y-1">
-                    <label htmlFor="stamp-date" className="text-sm font-medium">Date du cachet</label>
+                  <div className="space-y-2">
+                    <label htmlFor="stamp-date" className="text-sm font-medium">Date du cachet <span className="text-destructive">*</span></label>
                     <Input
                       id="stamp-date"
+                      className="h-10 text-sm"
                       type="date"
                       value={stampDate}
                       required

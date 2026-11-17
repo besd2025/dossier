@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, Printer, RotateCcw, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Printer,
+  RotateCcw,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { PermissionGate } from "@/components/permission-gate";
@@ -23,7 +29,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createObservation, getNote, updateNoteStatus } from "@/lib/services/notes-service";
+import {
+  createObservation,
+  getNote,
+  updateNoteStatus,
+} from "@/lib/services/notes-service";
 import { useSessionStore } from "@/stores/session/session-store";
 import { Role, StatutNote, TypeDocument } from "@/types";
 
@@ -53,7 +63,10 @@ export default function ValidationClient({ initialNote, dossierId }) {
   const user = currentUser || {};
   const status = note.statutNote;
   const canValidate = status === StatutNote.RELECTURE_BUREAU;
-  const canPrint = [StatutNote.VALIDEE, StatutNote.EN_ATTENTE_IMPRESSION].includes(status);
+  const canPrint = [
+    StatutNote.VALIDEE,
+    StatutNote.EN_ATTENTE_IMPRESSION,
+  ].includes(status);
   const canSign = status === StatutNote.IMPRIMEE;
   const isDeputy = role === Role.CHEF_BUREAU_ADJOINT;
   const printDelegations = note.activeDelegations || [];
@@ -87,7 +100,7 @@ export default function ValidationClient({ initialNote, dossierId }) {
     window.print();
     await updateStatus(
       StatutNote.IMPRIMEE,
-      "La note est marquée comme imprimée. Le secrétariat a été notifié."
+      "La note est marquée comme imprimée. Le secrétariat a été notifié.",
     );
   }
 
@@ -99,7 +112,7 @@ export default function ValidationClient({ initialNote, dossierId }) {
       await createObservation(
         note.id,
         { contenu: motif, notify: false, recordMovement: false },
-        user.id
+        user.id,
       );
       await updateNoteStatus(note.id, StatutNote.RELECTURE_CELLULE, user.id);
       await refreshNote();
@@ -113,8 +126,10 @@ export default function ValidationClient({ initialNote, dossierId }) {
     }
   }
 
-  const signerCanAct = role === Role.CHEF_BUREAU || role === Role.CHEF_BUREAU_ADJOINT;
-  const signatureLabel = note.signatureMention ||
+  const signerCanAct =
+    role === Role.CHEF_BUREAU || role === Role.CHEF_BUREAU_ADJOINT;
+  const signatureLabel =
+    note.signatureMention ||
     (note.signeParAdjoint && note.signeParId
       ? `Signée par ${note.signeParNom || "l'adjoint"}, adjoint, par prise en charge du ${formatDate(note.signaturePriseEnChargeDate)}`
       : null);
@@ -133,7 +148,9 @@ export default function ValidationClient({ initialNote, dossierId }) {
             <p className="text-sm text-muted-foreground">
               Dossier {note.dossier?.reference || dossierId}
             </p>
-            <h1 className="text-2xl font-semibold tracking-tight">Validation de la note</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Validation de la note
+            </h1>
           </div>
         </div>
         <StatusBadge type="note" status={status} size="lg" />
@@ -150,9 +167,12 @@ export default function ValidationClient({ initialNote, dossierId }) {
 
       <Card className="print:hidden">
         <CardHeader>
-          <CardTitle className="text-base">Circuit de validation et de signature</CardTitle>
+          <CardTitle className="text-base">
+            Circuit de validation et de signature
+          </CardTitle>
           <CardDescription>
-            {note.dossier?.objet || "Aperçu de la note avant validation, impression ou signature."}
+            {note.dossier?.objet ||
+              "Aperçu de la note avant validation, impression ou signature."}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-3">
@@ -162,7 +182,9 @@ export default function ValidationClient({ initialNote, dossierId }) {
           </div>
           <div className="rounded-lg border p-3">
             <p className="text-xs text-muted-foreground">Type de document</p>
-            <p className="font-medium">{DOCUMENT_LABELS[note.typeDocument] || note.typeDocument}</p>
+            <p className="font-medium">
+              {DOCUMENT_LABELS[note.typeDocument] || note.typeDocument}
+            </p>
           </div>
           <div className="rounded-lg border p-3">
             <p className="text-xs text-muted-foreground">Destinataire</p>
@@ -210,7 +232,7 @@ export default function ValidationClient({ initialNote, dossierId }) {
                   onClick={() =>
                     updateStatus(
                       StatutNote.EN_ATTENTE_IMPRESSION,
-                      "La note est validée et attend son impression."
+                      "La note est validée et attend son impression.",
                     )
                   }
                 >
@@ -258,7 +280,12 @@ export default function ValidationClient({ initialNote, dossierId }) {
               <Button
                 type="button"
                 disabled={isWorking}
-                onClick={() => updateStatus(StatutNote.SIGNEE, "La note est marquée comme signée.")}
+                onClick={() =>
+                  updateStatus(
+                    StatutNote.SIGNEE,
+                    "La note est marquée comme signée.",
+                  )
+                }
               >
                 <Check className="size-4" />
                 Marquer comme signée
@@ -271,16 +298,18 @@ export default function ValidationClient({ initialNote, dossierId }) {
               Aucune action n’est disponible à ce statut.
             </p>
           )}
-          {isDeputy && canSign && !note.activeDelegations?.some(
-            (delegation) =>
-              delegation.adjointId === user.id &&
-              delegation.active &&
-              delegation.portee?.signature === true
-          ) && (
-            <span className="sr-only">
-              Le bouton de signature est désactivé : prise en charge requise.
-            </span>
-          )}
+          {isDeputy &&
+            canSign &&
+            !note.activeDelegations?.some(
+              (delegation) =>
+                delegation.adjointId === user.id &&
+                delegation.active &&
+                delegation.portee?.signature === true,
+            ) && (
+              <span className="sr-only">
+                Le bouton de signature est désactivé : prise en charge requise.
+              </span>
+            )}
         </CardContent>
       </Card>
 
@@ -297,10 +326,14 @@ export default function ValidationClient({ initialNote, dossierId }) {
           <DialogHeader>
             <DialogTitle>Renvoyer en observation</DialogTitle>
             <DialogDescription>
-              Le motif sera ajouté au fil des observations et la note retournera à la relecture de la cellule.
+              Le motif sera ajouté au fil des observations et la note retournera
+              à la relecture de la cellule.
             </DialogDescription>
           </DialogHeader>
-          <label htmlFor="validation-observation-reason" className="text-sm font-medium">
+          <label
+            htmlFor="validation-observation-reason"
+            className="text-sm font-medium mb-2"
+          >
             Motif obligatoire
           </label>
           <textarea

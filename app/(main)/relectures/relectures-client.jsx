@@ -33,7 +33,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   getReviewWorklist,
   transitionNoteWithObservation,
@@ -65,7 +71,10 @@ function formatDate(value) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(date);
+  return new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
 }
 
 function downloadLatestVersion(item) {
@@ -116,7 +125,9 @@ export default function RelecturesClient() {
     try {
       setWorklist(await getReviewWorklist(user));
     } catch (loadError) {
-      setError(loadError?.message || "Impossible de charger les notes à relire.");
+      setError(
+        loadError?.message || "Impossible de charger les notes à relire.",
+      );
     } finally {
       setLoading(false);
     }
@@ -129,15 +140,22 @@ export default function RelecturesClient() {
 
   const rows = useMemo(() => worklist[tab] || [], [tab, worklist]);
   const allRows = useMemo(
-    () => [...worklist.toReview, ...worklist.returnedToAuthor, ...worklist.recentlyTreated],
+    () => [
+      ...worklist.toReview,
+      ...worklist.returnedToAuthor,
+      ...worklist.recentlyTreated,
+    ],
     [worklist],
   );
   const filteredRows = useMemo(
     () =>
       rows.filter((item) => {
-        if (cellFilter !== "all" && !item.celluleIds?.includes(cellFilter)) return false;
-        if (writerFilter !== "all" && item.redacteurId !== writerFilter) return false;
-        if (documentFilter !== "all" && item.typeDocument !== documentFilter) return false;
+        if (cellFilter !== "all" && !item.celluleIds?.includes(cellFilter))
+          return false;
+        if (writerFilter !== "all" && item.redacteurId !== writerFilter)
+          return false;
+        if (documentFilter !== "all" && item.typeDocument !== documentFilter)
+          return false;
         return !overdueOnly || item.daysWaiting > 7;
       }),
     [cellFilter, documentFilter, overdueOnly, rows, writerFilter],
@@ -158,41 +176,55 @@ export default function RelecturesClient() {
     setReason("");
   }, []);
 
-  const performAction = useCallback(async (item, action, motif = "") => {
-    if (working) return;
-    const nextStatus =
-      action === ACTIONS.SEND_TO_OFFICE
-        ? StatutNote.RELECTURE_BUREAU
-        : action === ACTIONS.RETURN_TO_AUTHOR
-          ? StatutNote.BROUILLON
-          : StatutNote.RELECTURE_CELLULE;
-    setWorking(true);
-    try {
-      if (motif) {
-        await transitionNoteWithObservation(item.id, nextStatus, motif, user.id);
-      } else {
-        await updateNoteStatus(item.id, nextStatus, user.id);
-      }
-      toast.success(
+  const performAction = useCallback(
+    async (item, action, motif = "") => {
+      if (working) return;
+      const nextStatus =
         action === ACTIONS.SEND_TO_OFFICE
-          ? "La note a été transmise au Chef de bureau."
+          ? StatutNote.RELECTURE_BUREAU
           : action === ACTIONS.RETURN_TO_AUTHOR
-            ? "La note a été renvoyée au rédacteur avec le motif."
-            : "La note a été renvoyée en observation."
-      );
-      setSelectedAction(null);
-      setReason("");
-      setReloadKey((key) => key + 1);
-    } catch (actionError) {
-      toast.error(actionError?.message || "L'action n'a pas pu être effectuée.");
-    } finally {
-      setWorking(false);
-    }
-  }, [user, working]);
+            ? StatutNote.BROUILLON
+            : StatutNote.RELECTURE_CELLULE;
+      setWorking(true);
+      try {
+        if (motif) {
+          await transitionNoteWithObservation(
+            item.id,
+            nextStatus,
+            motif,
+            user.id,
+          );
+        } else {
+          await updateNoteStatus(item.id, nextStatus, user.id);
+        }
+        toast.success(
+          action === ACTIONS.SEND_TO_OFFICE
+            ? "La note a été transmise au Chef de bureau."
+            : action === ACTIONS.RETURN_TO_AUTHOR
+              ? "La note a été renvoyée au rédacteur avec le motif."
+              : "La note a été renvoyée en observation.",
+        );
+        setSelectedAction(null);
+        setReason("");
+        setReloadKey((key) => key + 1);
+      } catch (actionError) {
+        toast.error(
+          actionError?.message || "L'action n'a pas pu être effectuée.",
+        );
+      } finally {
+        setWorking(false);
+      }
+    },
+    [user, working],
+  );
 
   const confirmAction = () => {
     if (!selectedAction || !reason.trim()) return;
-    return performAction(selectedAction.item, selectedAction.action, reason.trim());
+    return performAction(
+      selectedAction.item,
+      selectedAction.action,
+      reason.trim(),
+    );
   };
 
   const columns = useMemo(
@@ -204,7 +236,7 @@ export default function RelecturesClient() {
           <Link
             href={`/dossiers/${row.original.dossierId}/notes/${row.original.id}`}
             onClick={(event) => event.stopPropagation()}
-            className="font-mono text-xs font-semibold text-primary underline-offset-2 hover:underline"
+            className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
           >
             {row.original.dossierReference}
           </Link>
@@ -214,7 +246,10 @@ export default function RelecturesClient() {
         accessorKey: "dossierObject",
         header: "Objet",
         cell: ({ row }) => (
-          <span className="block max-w-[18rem] truncate" title={row.original.dossierObject}>
+          <span
+            className="block max-w-[18rem] truncate"
+            title={row.original.dossierObject}
+          >
             {row.original.dossierObject}
           </span>
         ),
@@ -222,7 +257,10 @@ export default function RelecturesClient() {
       {
         accessorKey: "typeDocument",
         header: "Type de document",
-        cell: ({ row }) => DOCUMENT_LABELS[row.original.typeDocument] || row.original.typeDocument || "—",
+        cell: ({ row }) =>
+          DOCUMENT_LABELS[row.original.typeDocument] ||
+          row.original.typeDocument ||
+          "—",
       },
       {
         accessorKey: "destinataire",
@@ -237,7 +275,7 @@ export default function RelecturesClient() {
         header: "Cellule",
         cell: ({ row }) => {
           const hasCaseagDelegation = row.original.assignedCells?.some(
-            (cell) => cell.code === "CASEAG" && cell.delegationCorrection
+            (cell) => cell.code === "CASEAG" && cell.delegationCorrection,
           );
           return (
             <div className="min-w-32">
@@ -265,7 +303,9 @@ export default function RelecturesClient() {
         cell: ({ row }) => (
           <div className="min-w-32">
             <p>{row.original.submittedBy}</p>
-            <p className="text-[11px] text-muted-foreground">{formatDate(row.original.submittedAt)}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {formatDate(row.original.submittedAt)}
+            </p>
           </div>
         ),
       },
@@ -278,7 +318,13 @@ export default function RelecturesClient() {
         accessorKey: "unresolvedObservations",
         header: "Observations",
         cell: ({ row }) => (
-          <span className={row.original.unresolvedObservations ? "font-semibold text-amber-700" : "text-muted-foreground"}>
+          <span
+            className={
+              row.original.unresolvedObservations
+                ? "font-semibold text-amber-700"
+                : "text-muted-foreground"
+            }
+          >
             {row.original.unresolvedObservations}
           </span>
         ),
@@ -290,15 +336,24 @@ export default function RelecturesClient() {
         cell: ({ row }) => {
           const item = row.original;
           const notePath = `/dossiers/${item.dossierId}/notes/${item.id}`;
-          const isCellReviewer = [Role.CHEF_CELLULE, Role.CHEF_CELLULE_ADJOINT].includes(role);
-          const isOfficeReviewer = [Role.CHEF_BUREAU, Role.CHEF_BUREAU_ADJOINT].includes(role);
+          const isCellReviewer = [
+            Role.CHEF_CELLULE,
+            Role.CHEF_CELLULE_ADJOINT,
+          ].includes(role);
+          const isOfficeReviewer = [
+            Role.CHEF_BUREAU,
+            Role.CHEF_BUREAU_ADJOINT,
+          ].includes(role);
           return (
-            <div className="flex min-w-[15rem] flex-wrap items-center gap-1" onClick={(event) => event.stopPropagation()}>
+            <div
+              className="flex min-w-[15rem] flex-wrap items-center gap-1"
+              onClick={(event) => event.stopPropagation()}
+            >
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-7 text-[11px]"
+                className="h-7 text-xs"
                 onClick={() => router.push(notePath)}
               >
                 <Eye className="size-3.5" />
@@ -312,29 +367,38 @@ export default function RelecturesClient() {
                 title="Télécharger la dernière version"
                 disabled={!item.latestVersion}
                 onClick={() => downloadLatestVersion(item)}
+                className="ml-1"
               >
-                <Download className="size-4" />
+                <Download className="size-5" />
               </Button>
               {tab === "toReview" && isCellReviewer && (
                 <>
-                  <PermissionGate ability="relire" context={{ dossierId: item.dossierId }}>
+                  <PermissionGate
+                    ability="relire"
+                    context={{ dossierId: item.dossierId }}
+                  >
                     <Button
                       type="button"
                       size="sm"
-                      className="h-7 text-[11px]"
+                      className="h-7 text-xs"
                       disabled={working}
-                      onClick={() => performAction(item, ACTIONS.SEND_TO_OFFICE)}
+                      onClick={() =>
+                        performAction(item, ACTIONS.SEND_TO_OFFICE)
+                      }
                     >
                       <Send className="size-3.5" />
                       Envoyer au Chef de bureau
                     </Button>
                   </PermissionGate>
-                  <PermissionGate ability="relire" context={{ dossierId: item.dossierId }}>
+                  <PermissionGate
+                    ability="relire"
+                    context={{ dossierId: item.dossierId }}
+                  >
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 text-[11px]"
+                      className="h-7 text-xs"
                       onClick={() => openAction(item, ACTIONS.RETURN_TO_AUTHOR)}
                     >
                       <Undo2 className="size-3.5" />
@@ -345,24 +409,33 @@ export default function RelecturesClient() {
               )}
               {tab === "toReview" && isOfficeReviewer && (
                 <>
-                  <PermissionGate ability="valider" context={{ dossierId: item.dossierId }}>
+                  <PermissionGate
+                    ability="valider"
+                    context={{ dossierId: item.dossierId }}
+                  >
                     <Button
                       type="button"
+                      variant="secondary"
                       size="sm"
-                      className="h-7 text-[11px]"
+                      className="h-7 text-xs"
                       onClick={() => router.push(`${notePath}/validation`)}
                     >
                       <FileCheck2 className="size-3.5" />
                       Ouvrir la validation
                     </Button>
                   </PermissionGate>
-                  <PermissionGate ability="valider" context={{ dossierId: item.dossierId }}>
+                  <PermissionGate
+                    ability="valider"
+                    context={{ dossierId: item.dossierId }}
+                  >
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 text-[11px]"
-                      onClick={() => openAction(item, ACTIONS.SEND_IN_OBSERVATION)}
+                      className="h-7 text-xs"
+                      onClick={() =>
+                        openAction(item, ACTIONS.SEND_IN_OBSERVATION)
+                      }
                     >
                       <MessageSquareText className="size-3.5" />
                       Renvoyer en observation
@@ -381,37 +454,68 @@ export default function RelecturesClient() {
   const filters = (
     <div className="flex flex-wrap items-center gap-2">
       <Select value={cellFilter} onValueChange={setCellFilter}>
-        <SelectTrigger aria-label="Filtrer par cellule" className="h-8 w-40 text-xs">
+        <SelectTrigger
+          aria-label="Filtrer par cellule"
+          className="h-8 w-40 text-xs"
+        >
           <SelectValue placeholder="Toutes les cellules" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Toutes les cellules</SelectItem>
-          {[...new Map(allRows.flatMap((item) =>
-            (item.assignedCells || []).map((cell) => [cell.id, cell])
-          )).values()].map((cell) => (
-            <SelectItem key={cell.id} value={cell.id}>{cell.code || cell.nom}</SelectItem>
+        <SelectContent className="max-h-72 px-1 py-1">
+          <SelectItem value="all" className="text-xs text-muted-foreground">
+            Toutes les cellules
+          </SelectItem>
+          {[
+            ...new Map(
+              allRows.flatMap((item) =>
+                (item.assignedCells || []).map((cell) => [cell.id, cell]),
+              ),
+            ).values(),
+          ].map((cell) => (
+            <SelectItem key={cell.id} value={cell.id} className="text-sm">
+              {cell.code || cell.nom}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
       <Select value={writerFilter} onValueChange={setWriterFilter}>
-        <SelectTrigger aria-label="Filtrer par rédacteur" className="h-8 w-44 text-xs">
+        <SelectTrigger
+          aria-label="Filtrer par rédacteur"
+          className="h-8 w-44 text-xs"
+        >
           <SelectValue placeholder="Tous les rédacteurs" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Tous les rédacteurs</SelectItem>
-          {[...new Map(allRows.map((item) => [item.redacteurId, item.redacteurNom])).entries()]
+        <SelectContent className="max-h-72 px-1 py-1">
+          <SelectItem value="all" className="text-xs text-muted-foreground">
+            Tous les rédacteurs
+          </SelectItem>
+          {[
+            ...new Map(
+              allRows.map((item) => [item.redacteurId, item.redacteurNom]),
+            ).entries(),
+          ]
             .filter(([id]) => id)
-            .map(([id, name]) => <SelectItem key={id} value={id}>{name}</SelectItem>)}
+            .map(([id, name]) => (
+              <SelectItem key={id} value={id} className="text-sm">
+                {name}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
       <Select value={documentFilter} onValueChange={setDocumentFilter}>
-        <SelectTrigger aria-label="Filtrer par type de document" className="h-8 w-48 text-xs">
+        <SelectTrigger
+          aria-label="Filtrer par type de document"
+          className="h-8 w-48 text-xs"
+        >
           <SelectValue placeholder="Tous les types" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Tous les types</SelectItem>
+        <SelectContent className="max-h-72 px-1 py-1">
+          <SelectItem value="all" className="text-xs text-muted-foreground">
+            Tous les types
+          </SelectItem>
           {Object.entries(DOCUMENT_LABELS).map(([type, label]) => (
-            <SelectItem key={type} value={type}>{label}</SelectItem>
+            <SelectItem key={type} value={type} className="text-sm">
+              {label}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -427,18 +531,22 @@ export default function RelecturesClient() {
     </div>
   );
 
-  const currentActionTitle = selectedAction?.action === ACTIONS.SEND_TO_OFFICE
-    ? "Envoyer au Chef de bureau"
-    : selectedAction?.action === ACTIONS.RETURN_TO_AUTHOR
-      ? "Renvoyer au rédacteur"
-      : "Renvoyer en observation";
+  const currentActionTitle =
+    selectedAction?.action === ACTIONS.SEND_TO_OFFICE
+      ? "Envoyer au Chef de bureau"
+      : selectedAction?.action === ACTIONS.RETURN_TO_AUTHOR
+        ? "Renvoyer au rédacteur"
+        : "Renvoyer en observation";
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Notes à relire / valider</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Notes à relire / valider
+        </h1>
         <p className="text-sm text-muted-foreground">
-          File de relecture limitée à votre cellule ou au circuit du bureau selon votre rôle.
+          File de relecture limitée à votre cellule ou au circuit du bureau
+          selon votre rôle.
         </p>
       </div>
 
@@ -453,7 +561,9 @@ export default function RelecturesClient() {
             <CardContent className="flex items-center justify-between p-4">
               <div>
                 <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">
+                  {value}
+                </p>
               </div>
               <div className="rounded-lg bg-primary/10 p-2 text-primary">
                 <Icon className="size-5" aria-hidden="true" />
@@ -464,11 +574,15 @@ export default function RelecturesClient() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="space-y-3">
-        <TabsList className="grid h-auto w-full grid-cols-1 sm:w-fit sm:grid-cols-3">
+        <TabsList className="w-full  sm:w-fit">
           {TABS.map(({ id, label }) => (
-            <TabsTrigger key={id} value={id} className="gap-1.5 px-3 py-2 text-xs">
+            <TabsTrigger
+              key={id}
+              value={id}
+              className="gap-2 px-3.5 py-4 text-sm"
+            >
               {label}
-              <span className="rounded-full bg-muted px-1.5 text-[10px]">
+              <span className="rounded-full bg-muted/70 px-2 py-0.5 text-xs font-medium">
                 {(worklist[id] || []).length}
               </span>
             </TabsTrigger>
@@ -487,7 +601,11 @@ export default function RelecturesClient() {
         ) : !filteredRows.length ? (
           <EmptyState
             icon={FileCheck2}
-            title={tab === "toReview" ? "Aucune note n'attend votre relecture" : "Aucune note à afficher"}
+            title={
+              tab === "toReview"
+                ? "Aucune note n'attend votre relecture"
+                : "Aucune note à afficher"
+            }
             description={
               rows.length
                 ? "Aucune note ne correspond aux filtres actifs."
@@ -506,7 +624,9 @@ export default function RelecturesClient() {
             emptyMessage="Aucune note ne correspond à la recherche."
             filters={filters}
             showSelectionCount={false}
-            onRowClick={(item) => router.push(`/dossiers/${item.dossierId}/notes/${item.id}`)}
+            onRowClick={(item) =>
+              router.push(`/dossiers/${item.dossierId}/notes/${item.id}`)
+            }
           />
         )}
       </Tabs>
@@ -520,28 +640,36 @@ export default function RelecturesClient() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-xl p-6">
           <DialogHeader>
-            <DialogTitle>{currentActionTitle}</DialogTitle>
-            <DialogDescription>
-              {selectedAction?.item?.dossierReference} · {selectedAction?.item?.dossierObject}
+            <DialogTitle className="text-lg font-semibold">
+              {currentActionTitle}
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              <span className="font-semibold text-foreground">
+                {selectedAction?.item?.dossierReference}
+              </span>{" "}
+              · {selectedAction?.item?.dossierObject}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <label htmlFor="review-action-reason" className="text-sm font-medium">
-              Motif obligatoire
+          <div className="space-y-2 py-1">
+            <label
+              htmlFor="review-action-reason"
+              className="text-sm font-medium"
+            >
+              Motif obligatoire <span className="text-destructive">*</span>
             </label>
             <textarea
               id="review-action-reason"
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Saisissez le motif à transmettre avec la note."
+              placeholder="Saisissez le motif à transmettre avec la note..."
               rows={4}
               required
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="w-full rounded-lg border border-input bg-background p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, UserCheck } from "lucide-react";
+import { Info, Plus, UserCheck } from "lucide-react";
 
 import { PermissionGate } from "@/components/permission-gate";
 import {
@@ -21,7 +21,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   createPriseEnCharge,
   getAssignmentUsers,
@@ -44,9 +50,17 @@ const formatDateTime = (value) => {
   }).format(date);
 };
 
-const fullName = (person) => [person?.prenom, person?.nom].filter(Boolean).join(" ") || "—";
+const fullName = (person) =>
+  [person?.prenom, person?.nom].filter(Boolean).join(" ") || "—";
 
-function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCreated }) {
+function PriseEnChargeDialog({
+  open,
+  onOpenChange,
+  dossiers,
+  users,
+  user,
+  onCreated,
+}) {
   const [dossierId, setDossierId] = useState("none");
   const [adjointId, setAdjointId] = useState("none");
   const [affecter, setAffecter] = useState(false);
@@ -56,8 +70,14 @@ function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCrea
   const [error, setError] = useState("");
 
   const deputies = useMemo(() => {
-    if (user?.role === Role.CHEF_BUREAU || user?.role === Role.CHEF_BUREAU_ADJOINT) {
-      return users.filter((candidate) => candidate.role === Role.CHEF_BUREAU_ADJOINT && candidate.actif);
+    if (
+      user?.role === Role.CHEF_BUREAU ||
+      user?.role === Role.CHEF_BUREAU_ADJOINT
+    ) {
+      return users.filter(
+        (candidate) =>
+          candidate.role === Role.CHEF_BUREAU_ADJOINT && candidate.actif,
+      );
     }
     return users.filter(
       (candidate) =>
@@ -99,7 +119,9 @@ function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCrea
       reset();
       onOpenChange(false);
     } catch (createError) {
-      setError(createError?.message || "La prise en charge n'a pas pu être créée.");
+      setError(
+        createError?.message || "La prise en charge n'a pas pu être créée.",
+      );
     } finally {
       setSaving(false);
     }
@@ -111,7 +133,8 @@ function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCrea
         <DialogHeader>
           <DialogTitle>Créer une prise en charge</DialogTitle>
           <DialogDescription>
-            La délégation peut être accordée en cours de traitement, même si une note est déjà en préparation.
+            La délégation peut être accordée en cours de traitement, même si une
+            note est déjà en préparation.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -121,7 +144,7 @@ function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCrea
               <SelectTrigger id="pec-dossier" className="w-full">
                 <SelectValue placeholder="Choisir un dossier" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="w-full px-2 pu-1">
                 <SelectItem value="none">Choisir un dossier</SelectItem>
                 {dossiers.map((dossier) => (
                   <SelectItem key={dossier.id} value={dossier.id}>
@@ -141,7 +164,8 @@ function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCrea
                 <SelectItem value="none">Choisir un adjoint</SelectItem>
                 {deputies.map((deputy) => (
                   <SelectItem key={deputy.id} value={deputy.id}>
-                    {fullName(deputy)}{deputy.cellule ? ` · ${deputy.cellule}` : ""}
+                    {fullName(deputy)}
+                    {deputy.cellule ? ` · ${deputy.cellule}` : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -156,7 +180,8 @@ function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCrea
           <div className="rounded-lg border bg-muted/20 p-3">
             <p className="text-sm font-medium">Portée de l&apos;autorisation</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Signature (et, selon décision à confirmer : affecter, valider, imprimer).
+              Signature (et, selon décision à confirmer : affecter, valider,
+              imprimer).
             </p>
             <div className="mt-3 grid gap-2 sm:grid-cols-3">
               {[
@@ -164,7 +189,10 @@ function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCrea
                 ["valider", "Valider", valider, setValider],
                 ["imprimer", "Imprimer", imprimer, setImprimer],
               ].map(([key, label, checked, setChecked]) => (
-                <label key={key} className="flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm">
+                <label
+                  key={key}
+                  className="flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm"
+                >
                   <input
                     type="checkbox"
                     checked={checked}
@@ -176,17 +204,34 @@ function PriseEnChargeDialog({ open, onOpenChange, dossiers, users, user, onCrea
               ))}
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              La signature est toujours incluse. Les autres portées sont désactivées par défaut.
+              La signature est toujours incluse. Les autres portées sont
+              désactivées par défaut.
             </p>
           </div>
 
-          {error && <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+          {error && (
+            <p
+              role="alert"
+              className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              {error}
+            </p>
+          )}
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" disabled={saving} onClick={() => close(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={saving}
+            onClick={() => close(false)}
+          >
             Annuler
           </Button>
-          <Button type="button" disabled={saving || !deputies.length} onClick={submit}>
+          <Button
+            type="button"
+            disabled={saving || !deputies.length}
+            onClick={submit}
+          >
             {saving ? "Création..." : "Confirmer la prise en charge"}
           </Button>
         </DialogFooter>
@@ -218,7 +263,9 @@ export default function PrisesEnChargePage() {
       setDossiers(dossierRows);
       setUsers(userRows);
     } catch (loadError) {
-      setError(loadError?.message || "Impossible de charger les prises en charge.");
+      setError(
+        loadError?.message || "Impossible de charger les prises en charge.",
+      );
     } finally {
       setLoading(false);
     }
@@ -237,10 +284,10 @@ export default function PrisesEnChargePage() {
         header: "Dossier",
         cell: ({ row }) => (
           <div className="min-w-40">
-            <p className="font-mono text-xs font-semibold text-primary">
+            <p className="text-sm font-semibold text-primary">
               {row.original.dossier?.reference || row.original.dossierId}
             </p>
-            <p className="mt-0.5 max-w-64 truncate text-[11px] text-muted-foreground">
+            <p className="mt-0.5 max-w-64 truncate text-xs text-muted-foreground">
               {row.original.dossier?.objet || "Dossier indisponible"}
             </p>
           </div>
@@ -250,23 +297,33 @@ export default function PrisesEnChargePage() {
         id: "titulaire",
         accessorFn: (row) => fullName(row.titulaire),
         header: "Titulaire",
-        cell: ({ row }) => <span className="text-xs">{fullName(row.original.titulaire)}</span>,
+        cell: ({ row }) => (
+          <span className="text-sm">{fullName(row.original.titulaire)}</span>
+        ),
       },
       {
         id: "adjoint",
         accessorFn: (row) => fullName(row.adjoint),
         header: "Adjoint désigné",
-        cell: ({ row }) => <span className="text-xs">{fullName(row.original.adjoint)}</span>,
+        cell: ({ row }) => (
+          <span className="text-sm">{fullName(row.original.adjoint)}</span>
+        ),
       },
       {
         accessorKey: "dateHeure",
         header: "Date et heure",
-        cell: ({ row }) => <span className="font-mono text-xs">{formatDateTime(row.getValue("dateHeure"))}</span>,
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {formatDateTime(row.getValue("dateHeure"))}
+          </span>
+        ),
       },
       {
         accessorKey: "auteur",
         header: "Auteur",
-        cell: ({ row }) => <span className="text-xs">{fullName(row.original.auteur)}</span>,
+        cell: ({ row }) => (
+          <span className="text-sm">{fullName(row.original.auteur)}</span>
+        ),
       },
       {
         id: "portee",
@@ -280,14 +337,24 @@ export default function PrisesEnChargePage() {
             ...(portee.valider ? ["Valider"] : []),
             ...(portee.imprimer ? ["Imprimer"] : []),
           ];
-          return <span className="text-[11px] text-muted-foreground">{labels.join(" · ")}</span>;
+          return (
+            <span className="text-xs text-muted-foreground">
+              {labels.join(" · ")}
+            </span>
+          );
         },
       },
       {
         accessorKey: "active",
         header: "État",
         cell: ({ row }) => (
-          <span className={row.getValue("active") ? "text-xs font-medium text-emerald-700 dark:text-emerald-400" : "text-xs text-muted-foreground"}>
+          <span
+            className={
+              row.getValue("active")
+                ? "text-sm font-medium text-emerald-700 dark:text-emerald-400"
+                : "text-sm text-muted-foreground"
+            }
+          >
             {row.getValue("active") ? "Active" : "Terminée"}
           </span>
         ),
@@ -303,7 +370,9 @@ export default function PrisesEnChargePage() {
       setReloadKey((key) => key + 1);
       return created;
     } catch (createError) {
-      toast.error(createError?.message || "La prise en charge n'a pas pu être créée.");
+      toast.error(
+        createError?.message || "La prise en charge n'a pas pu être créée.",
+      );
       throw createError;
     }
   };
@@ -312,21 +381,34 @@ export default function PrisesEnChargePage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Prises en charge des adjoints</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Prises en charge des adjoints
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Délégations de suivi attachées aux dossiers, y compris en cours de traitement.
+            Délégations de suivi attachées aux dossiers, y compris en cours de
+            traitement.
           </p>
         </div>
         <PermissionGate ability="gerer_prises_en_charge">
-          <Button type="button" size="sm" onClick={() => setDialogOpen(true)}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            onClick={() => setDialogOpen(true)}
+          >
             <Plus className="size-4" />
             Nouvelle prise en charge
           </Button>
         </PermissionGate>
       </div>
 
-      <div className="rounded-lg border bg-muted/20 p-3 text-xs text-muted-foreground">
-        La signature est incluse. Les portées supplémentaires (affecter, valider, imprimer) restent configurables conformément à la décision à confirmer.
+      <div className="rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground flex gap-2">
+        <Info className="size-4 text-secondary" />
+        <p>
+          La signature est incluse. Les portées supplémentaires (affecter,
+          valider, imprimer) restent configurables conformément à la décision à
+          confirmer.
+        </p>
       </div>
 
       {error ? (
@@ -356,7 +438,11 @@ export default function PrisesEnChargePage() {
           description="Créez une délégation pour permettre à un adjoint d'assurer le suivi d'un dossier."
           action={
             <PermissionGate ability="gerer_prises_en_charge">
-              <Button type="button" size="sm" onClick={() => setDialogOpen(true)}>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setDialogOpen(true)}
+              >
                 <Plus className="size-4" />
                 Créer une prise en charge
               </Button>

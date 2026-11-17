@@ -5,10 +5,7 @@ import Link from "next/link";
 import { Bell, CheckCheck, Mail, MailOpen, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  EmptyState,
-  ErrorState,
-} from "@/components/shared";
+import { EmptyState, ErrorState } from "@/components/shared";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +16,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from "@/lib/services/notifications-service";
+import {
+  getNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from "@/lib/services/notifications-service";
 import { useSessionStore } from "@/stores/session/session-store";
 
 const TYPE_LABELS = {
@@ -49,7 +50,9 @@ function formatDate(value) {
 }
 
 export default function NotificationsPage() {
-  const userId = useSessionStore((state) => (state.currentUser || state.user)?.id);
+  const userId = useSessionStore(
+    (state) => (state.currentUser || state.user)?.id,
+  );
   const [notifications, setNotifications] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [filter, setFilter] = useState("TOUTES");
@@ -64,9 +67,11 @@ export default function NotificationsPage() {
     try {
       const rows = await getNotifications(userId);
       setNotifications(rows);
-      setSelectedId((current) => current && rows.some((item) => item.id === current)
-        ? current
-        : rows[0]?.id || null);
+      setSelectedId((current) =>
+        current && rows.some((item) => item.id === current)
+          ? current
+          : rows[0]?.id || null,
+      );
     } catch (loadError) {
       setError(loadError.message || "Impossible de charger les notifications.");
     } finally {
@@ -80,28 +85,41 @@ export default function NotificationsPage() {
   }, [loadNotifications]);
 
   const types = useMemo(
-    () => [...new Set(notifications.map((item) => item.type).filter(Boolean))].sort(),
-    [notifications]
+    () =>
+      [
+        ...new Set(notifications.map((item) => item.type).filter(Boolean)),
+      ].sort(),
+    [notifications],
   );
   const filteredNotifications = useMemo(
-    () => notifications.filter((notification) =>
-      (filter !== "NON_LUES" || !notification.lue) &&
-      (typeFilter === "TOUS" || notification.type === typeFilter)
-    ),
-    [notifications, filter, typeFilter]
+    () =>
+      notifications.filter(
+        (notification) =>
+          (filter !== "NON_LUES" || !notification.lue) &&
+          (typeFilter === "TOUS" || notification.type === typeFilter),
+      ),
+    [notifications, filter, typeFilter],
   );
-  const selected = filteredNotifications.find((item) => item.id === selectedId) || filteredNotifications[0] || null;
+  const selected =
+    filteredNotifications.find((item) => item.id === selectedId) ||
+    filteredNotifications[0] ||
+    null;
 
   async function handleSelect(notification) {
     setSelectedId(notification.id);
     if (notification.lue) return;
     try {
       await markNotificationAsRead(notification.id, userId);
-      setNotifications((rows) => rows.map((row) =>
-        row.id === notification.id ? { ...row, lue: true } : row
-      ));
+      setNotifications((rows) =>
+        rows.map((row) =>
+          row.id === notification.id ? { ...row, lue: true } : row,
+        ),
+      );
     } catch (markError) {
-      toast.error(markError.message || "La notification n'a pas pu être marquée comme lue.");
+      toast.error(
+        markError.message ||
+          "La notification n'a pas pu être marquée comme lue.",
+      );
     }
   }
 
@@ -113,13 +131,18 @@ export default function NotificationsPage() {
       setNotifications((rows) => rows.map((row) => ({ ...row, lue: true })));
       toast.success("Toutes les notifications sont marquées comme lues.");
     } catch (markError) {
-      toast.error(markError.message || "Les notifications n'ont pas pu être mises à jour.");
+      toast.error(
+        markError.message ||
+          "Les notifications n'ont pas pu être mises à jour.",
+      );
     } finally {
       setWorking(false);
     }
   }
 
-  const unreadCount = notifications.filter((notification) => !notification.lue).length;
+  const unreadCount = notifications.filter(
+    (notification) => !notification.lue,
+  ).length;
 
   return (
     <div className="space-y-5">
@@ -129,17 +152,29 @@ export default function NotificationsPage() {
             <Bell className="size-4" />
             Communication
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Centre de notifications</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Centre de notifications
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Vos alertes de dossiers, affectations et étapes de traitement.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" disabled={loading} onClick={loadNotifications}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={loading}
+            onClick={loadNotifications}
+          >
             <RefreshCw className="size-4" />
             Actualiser
           </Button>
-          <Button type="button" variant="outline" disabled={!unreadCount || working} onClick={markAllAsRead}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!unreadCount || working}
+            onClick={markAllAsRead}
+          >
             <CheckCheck className="size-4" />
             Tout marquer comme lu
           </Button>
@@ -147,28 +182,59 @@ export default function NotificationsPage() {
       </div>
 
       <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1">
-          <label htmlFor="notification-read-filter" className="text-xs font-medium text-muted-foreground">État</label>
+        <div className="flex flex-col space-y-2">
+          <label
+            htmlFor="notification-read-filter"
+            className="text-xs font-medium text-muted-foreground"
+          >
+            État
+          </label>
           <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger id="notification-read-filter" className="h-9 min-w-36 bg-background px-3 text-sm">
+            <SelectTrigger
+              id="notification-read-filter"
+              className="h-9 min-w-36 bg-background px-3 text-sm"
+            >
               <SelectValue placeholder="État" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="TOUTES" className="text-xs">Toutes</SelectItem>
-              <SelectItem value="NON_LUES" className="text-xs">Non lues</SelectItem>
+            <SelectContent className="px-2 py-1 w-full">
+              <SelectItem
+                value="TOUTES"
+                className="text-xs text-muted-foreground"
+              >
+                Toutes
+              </SelectItem>
+              <SelectItem value="NON_LUES" className="text-sm">
+                Non lues
+              </SelectItem>
+              <SelectItem value="LUES" className="text-sm">
+                Lues
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-1">
-          <label htmlFor="notification-type-filter" className="text-xs font-medium text-muted-foreground">Type</label>
+        <div className="flex flex-col space-y-2">
+          <label
+            htmlFor="notification-type-filter"
+            className="text-xs font-medium text-muted-foreground"
+          >
+            Type
+          </label>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger id="notification-type-filter" className="h-9 min-w-48 bg-background px-3 text-sm">
+            <SelectTrigger
+              id="notification-type-filter"
+              className="h-9 min-w-48 bg-background px-3 text-sm"
+            >
               <SelectValue placeholder="Tous les types" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="TOUS" className="text-xs">Tous les types</SelectItem>
+            <SelectContent className="px-2 py-1 w-full">
+              <SelectItem
+                value="TOUS"
+                className="text-xs text-muted-foreground"
+              >
+                Tous les types
+              </SelectItem>
               {types.map((type) => (
-                <SelectItem key={type} value={type} className="text-xs">
+                <SelectItem key={type} value={type} className="text-sm">
                   {TYPE_LABELS[type] || type}
                 </SelectItem>
               ))}
@@ -196,7 +262,9 @@ export default function NotificationsPage() {
         <div className="grid min-h-[30rem] gap-4 lg:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.2fr)]">
           <Card className="min-h-0">
             <CardHeader className="border-b py-3">
-              <CardTitle className="text-sm">Messages ({filteredNotifications.length})</CardTitle>
+              <CardTitle className="text-sm">
+                Messages ({filteredNotifications.length})
+              </CardTitle>
             </CardHeader>
             <CardContent className="max-h-[34rem] overflow-y-auto p-0">
               <ul className="divide-y">
@@ -205,22 +273,40 @@ export default function NotificationsPage() {
                     <button
                       type="button"
                       onClick={() => handleSelect(notification)}
-                      aria-current={selected?.id === notification.id ? "true" : undefined}
+                      aria-current={
+                        selected?.id === notification.id ? "true" : undefined
+                      }
                       className={`w-full px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring ${
                         selected?.id === notification.id ? "bg-muted" : ""
                       }`}
                     >
                       <span className="flex items-start gap-3">
-                        <span className="mt-0.5 text-muted-foreground" aria-hidden="true">
-                          {notification.lue ? <MailOpen className="size-4" /> : <Mail className="size-4" />}
+                        <span className="mt-0.5 " aria-hidden="true">
+                          {notification.lue ? (
+                            <MailOpen className="size-4 text-muted-foreground" />
+                          ) : (
+                            <Mail className="size-4 text-primary animate-ping" />
+                          )}
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="flex items-start justify-between gap-2">
-                            <span className="text-sm font-medium">{TYPE_LABELS[notification.type] || notification.type}</span>
-                            {!notification.lue && <span className="mt-1 size-2 shrink-0 rounded-full bg-primary" aria-label="Non lue" />}
+                            <span className="text-sm font-medium">
+                              {TYPE_LABELS[notification.type] ||
+                                notification.type}
+                            </span>
+                            {!notification.lue && (
+                              <span
+                                className="mt-1 size-2 shrink-0 rounded-full bg-primary animate-pulse"
+                                aria-label="Non lue"
+                              />
+                            )}
                           </span>
-                          <span className="mt-1 line-clamp-2 block text-sm text-muted-foreground">{notification.message}</span>
-                          <span className="mt-2 block text-xs text-muted-foreground">{formatDate(notification.date)}</span>
+                          <span className="mt-1 line-clamp-2 block text-sm text-muted-foreground">
+                            {notification.message}
+                          </span>
+                          <span className="mt-2 block text-xs text-muted-foreground">
+                            {formatDate(notification.date)}
+                          </span>
                         </span>
                       </span>
                     </button>
@@ -234,28 +320,57 @@ export default function NotificationsPage() {
             <Card className="min-h-[24rem]">
               <CardHeader className="border-b">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle>{TYPE_LABELS[selected.type] || selected.type}</CardTitle>
+                  <CardTitle>
+                    {TYPE_LABELS[selected.type] || selected.type}
+                  </CardTitle>
                   <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                    {selected.canal === "COURRIEL" ? <Mail className="size-3.5" /> : <Bell className="size-3.5" />}
-                    {selected.canal === "COURRIEL" ? "Courriel" : selected.canal === "TOUS" ? "Courriel et application" : "Application"}
+                    {selected.canal === "COURRIEL" ? (
+                      <Mail className="size-3.5" />
+                    ) : (
+                      <Bell className="size-3.5" />
+                    )}
+                    {selected.canal === "COURRIEL"
+                      ? "Courriel"
+                      : selected.canal === "TOUS"
+                        ? "Courriel et application"
+                        : "Application"}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">{formatDate(selected.date)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatDate(selected.date)}
+                </p>
               </CardHeader>
               <CardContent className="space-y-5 pt-5">
-                <p className="whitespace-pre-wrap text-sm leading-6">{selected.message}</p>
+                <p className="whitespace-pre-wrap text-sm leading-6">
+                  {selected.message}
+                </p>
                 {selected.dossier && (
                   <div className="rounded-lg border p-4">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Dossier associé</p>
-                    <p className="mt-2 font-mono text-sm font-semibold text-primary">{selected.dossier.reference}</p>
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Dossier associé
+                    </p>
+                    <p className="mt-2 font-mono text-sm font-semibold text-primary">
+                      {selected.dossier.reference}
+                    </p>
                     <p className="mt-1 text-sm">{selected.dossier.objet}</p>
                     {selected.dossier.statutDossier && (
                       <div className="mt-3">
-                        <StatusBadge status={selected.dossier.statutDossier} size="sm" />
+                        <StatusBadge
+                          status={selected.dossier.statutDossier}
+                          size="md"
+                          className="py-3"
+                        />
                       </div>
                     )}
-                    <Button className="mt-4" size="sm" variant="outline" asChild>
-                      <Link href={`/dossiers/${selected.dossierId}`}>Ouvrir le dossier</Link>
+                    <Button
+                      className="mt-4"
+                      size="sm"
+                      variant="outline"
+                      asChild
+                    >
+                      <Link href={`/dossiers/${selected.dossierId}`}>
+                        Ouvrir le dossier
+                      </Link>
                     </Button>
                   </div>
                 )}
@@ -263,14 +378,20 @@ export default function NotificationsPage() {
             </Card>
           ) : (
             <Card className="grid min-h-[24rem] place-items-center">
-              <CardContent className="pt-6 text-sm text-muted-foreground">Sélectionnez une notification.</CardContent>
+              <CardContent className="pt-6 text-sm text-muted-foreground">
+                Sélectionnez une notification.
+              </CardContent>
             </Card>
           )}
         </div>
       ) : (
         <EmptyState
           icon={Bell}
-          title={filter === "NON_LUES" ? "Aucune notification non lue" : "Aucune notification"}
+          title={
+            filter === "NON_LUES"
+              ? "Aucune notification non lue"
+              : "Aucune notification"
+          }
           description="Les événements liés à votre compte apparaîtront ici."
         />
       )}
