@@ -97,10 +97,12 @@ export function KeywordInput({
           <Tag className="size-3.5 text-primary" />
           <span>Mots-clés d&apos;indexation</span>
           {required && (
-            <span className="text-destructive font-bold" title="Obligatoire">*</span>
+            <span className="text-destructive font-bold" title="Obligatoire">
+              *
+            </span>
           )}
         </label>
-        <span className="text-[11px] text-muted-foreground font-mono">
+        <span className="text-[11px] text-muted-foreground">
           {keywords.length} / {max}
         </span>
       </div>
@@ -111,7 +113,7 @@ export function KeywordInput({
         className={cn(
           "flex flex-wrap items-center gap-1.5 p-2 rounded-lg border border-input bg-background min-h-[42px] cursor-text transition-colors shadow-2xs focus-within:ring-2 focus-within:ring-ring focus-within:border-ring",
           disabled && "opacity-50 cursor-not-allowed bg-muted/40",
-          error && "border-destructive focus-within:ring-destructive"
+          error && "border-destructive focus-within:ring-destructive",
         )}
       >
         {keywords.map((word, index) => (
@@ -162,10 +164,13 @@ export function KeywordInput({
         <p className="text-[11px] text-muted-foreground">
           {required && keywords.length === 0 ? (
             <span className="text-amber-600 dark:text-amber-400 font-medium">
-              Obligatoire : au moins un mot-clé requis avant de pouvoir déposer ou transmettre une note.
+              Obligatoire : au moins un mot-clé requis avant de pouvoir déposer
+              ou transmettre une note.
             </span>
           ) : (
-            <span>Appuyez sur Entrée ou Virgule pour valider chaque mot-clé.</span>
+            <span>
+              Appuyez sur Entrée ou Virgule pour valider chaque mot-clé.
+            </span>
           )}
         </p>
       )}

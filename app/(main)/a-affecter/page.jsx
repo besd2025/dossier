@@ -2,14 +2,31 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, BriefcaseBusiness, Plus } from "lucide-react";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  DiagramFlowHorizontal,
+  Plus,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { PermissionGate } from "@/components/permission-gate";
-import { DataTable, EmptyState, ErrorState, StatusBadge, TableSkeleton } from "@/components/shared";
+import {
+  DataTable,
+  EmptyState,
+  ErrorState,
+  StatusBadge,
+  TableSkeleton,
+} from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { getAssignmentUsers, getCellules } from "@/src/lib/services/administration-service";
-import { assignDossier, getDossiersToAssign } from "@/src/lib/services/dossiers-service";
+import {
+  getAssignmentUsers,
+  getCellules,
+} from "@/src/lib/services/administration-service";
+import {
+  assignDossier,
+  getDossiersToAssign,
+} from "@/src/lib/services/dossiers-service";
 import { useSessionStore } from "@/stores/session/session-store";
 import { Role } from "@/types";
 import { AssignDialog } from "./assign-dialog";
@@ -57,7 +74,9 @@ export default function AAffecterPage() {
       setCellules(celluleRows);
       setUsers(userRows);
     } catch (loadError) {
-      setError(loadError?.message || "Impossible de charger les dossiers à affecter.");
+      setError(
+        loadError?.message || "Impossible de charger les dossiers à affecter.",
+      );
     } finally {
       setLoading(false);
     }
@@ -74,7 +93,7 @@ export default function AAffecterPage() {
         accessorKey: "reference",
         header: "Référence",
         cell: ({ row }) => (
-          <span className="font-mono text-xs font-semibold text-primary">
+          <span className="text-xs font-semibold text-primary">
             {row.getValue("reference")}
           </span>
         ),
@@ -82,17 +101,31 @@ export default function AAffecterPage() {
       {
         accessorKey: "objet",
         header: "Objet",
-        cell: ({ row }) => <span className="block max-w-[28rem] truncate">{row.getValue("objet")}</span>,
+        cell: ({ row }) => (
+          <span className="block max-w-[28rem] truncate">
+            {row.getValue("objet")}
+          </span>
+        ),
       },
       {
         accessorKey: "dateReceptionBesd",
         header: "Réception BESD",
-        cell: ({ row }) => <span className="font-mono text-xs">{formatDate(row.getValue("dateReceptionBesd"))}</span>,
+        cell: ({ row }) => (
+          <span className="text-xs">
+            {formatDate(row.getValue("dateReceptionBesd"))}
+          </span>
+        ),
       },
       {
         accessorKey: "statutDossier",
         header: "Statut",
-        cell: ({ row }) => <StatusBadge status={row.getValue("statutDossier")} type="dossier" size="sm" />,
+        cell: ({ row }) => (
+          <StatusBadge
+            status={row.getValue("statutDossier")}
+            type="dossier"
+            size="md"
+          />
+        ),
       },
       {
         id: "action",
@@ -104,8 +137,12 @@ export default function AAffecterPage() {
             context={{
               dossier: {
                 ...row.original,
-                cellulePrincipale: row.original.cellules?.find((item) => item.type === "PRINCIPALE")?.code,
-                cellules: (row.original.cellules || []).map((item) => item.code),
+                cellulePrincipale: row.original.cellules?.find(
+                  (item) => item.type === "PRINCIPALE",
+                )?.code,
+                cellules: (row.original.cellules || []).map(
+                  (item) => item.code,
+                ),
               },
             }}
           >
@@ -118,6 +155,7 @@ export default function AAffecterPage() {
                 setSelectedDossier(row.original);
               }}
             >
+              <DiagramFlowHorizontal size={18} />
               Affecter
               <ArrowRight className="size-3.5" />
             </Button>
@@ -130,17 +168,28 @@ export default function AAffecterPage() {
 
   const handleAssign = async (assignment) => {
     try {
-      const result = await assignDossier({ dossierId: selectedDossier.id, ...assignment }, user);
-      const recipient = assignment.type === "BUREAU_VERS_CELLULE"
-        ? cellules
-          .filter((cellule) => assignment.cellules.some((item) => item.celluleId === cellule.id))
-          .map((cellule) => cellule.code)
-          .join(" et ")
-        : assignment.type === "CELLULE_VERS_CONSEILLER"
-          ? assignment.conseillers.map((counselor) => `${counselor.prenom} ${counselor.nom}`).join(" et ")
-          : assignment.type === "HORS_CELLULE"
-            ? users.find((item) => item.id === assignment.conseillerId)?.prenom || "le conseiller hors cellule"
-            : `${user.prenom} ${user.nom}`;
+      const result = await assignDossier(
+        { dossierId: selectedDossier.id, ...assignment },
+        user,
+      );
+      const recipient =
+        assignment.type === "BUREAU_VERS_CELLULE"
+          ? cellules
+              .filter((cellule) =>
+                assignment.cellules.some(
+                  (item) => item.celluleId === cellule.id,
+                ),
+              )
+              .map((cellule) => cellule.code)
+              .join(" et ")
+          : assignment.type === "CELLULE_VERS_CONSEILLER"
+            ? assignment.conseillers
+                .map((counselor) => `${counselor.prenom} ${counselor.nom}`)
+                .join(" et ")
+            : assignment.type === "HORS_CELLULE"
+              ? users.find((item) => item.id === assignment.conseillerId)
+                  ?.prenom || "le conseiller hors cellule"
+              : `${user.prenom} ${user.nom}`;
       toast.success(`Affectation notifiée à ${recipient}.`);
       setSelectedDossier(null);
       setReloadKey((key) => key + 1);
@@ -151,13 +200,17 @@ export default function AAffecterPage() {
     }
   };
 
-  const title = role === Role.CHEF_CELLULE || role === Role.CHEF_CELLULE_ADJOINT
-    ? "Dossiers de la cellule à affecter"
-    : "Dossiers reçus à affecter";
+  const title =
+    role === Role.CHEF_CELLULE || role === Role.CHEF_CELLULE_ADJOINT
+      ? "Dossiers de la cellule à affecter"
+      : "Dossiers reçus à affecter";
 
   if (!canAccessPage) {
     return (
-      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">
+      <div
+        role="alert"
+        className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive"
+      >
         Cette page est réservée aux responsables du bureau et des cellules.
       </div>
     );
@@ -167,7 +220,9 @@ export default function AAffecterPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dossiers à affecter</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Dossiers à affecter
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {role === Role.CHEF_CELLULE || role === Role.CHEF_CELLULE_ADJOINT
               ? "Affectez les dossiers de votre cellule à un ou deux conseillers."
@@ -200,7 +255,12 @@ export default function AAffecterPage() {
           showPagination
           showSelectionCount={false}
           toolbarActions={
-            <Button type="button" size="sm" variant="outline" onClick={() => router.push("/dossiers")}>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => router.push("/dossiers")}
+            >
               <Plus className="size-3.5" />
               Liste des dossiers
             </Button>

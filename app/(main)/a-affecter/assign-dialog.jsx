@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, UserRound, UsersRound } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +19,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Role } from "@/types";
 
-const isOfficeManager = (role) => role === Role.CHEF_BUREAU || role === Role.CHEF_BUREAU_ADJOINT;
+const isOfficeManager = (role) =>
+  role === Role.CHEF_BUREAU || role === Role.CHEF_BUREAU_ADJOINT;
 
 function personName(user) {
   return [user.prenom, user.nom].filter(Boolean).join(" ");
@@ -33,13 +46,26 @@ function CheckboxOption({ checked, onChange, children, description }) {
       />
       <span className="min-w-0">
         <span className="block text-sm font-medium">{children}</span>
-        {description && <span className="mt-0.5 block text-xs text-muted-foreground">{description}</span>}
+        {description && (
+          <span className="mt-0.5 block text-xs text-muted-foreground">
+            {description}
+          </span>
+        )}
       </span>
     </label>
   );
 }
 
-export function AssignDialog({ dossier, role, user, users, cellules, open, onOpenChange, onAssigned }) {
+export function AssignDialog({
+  dossier,
+  role,
+  user,
+  users,
+  cellules,
+  open,
+  onOpenChange,
+  onAssigned,
+}) {
   const [step, setStep] = useState("form");
   const [bureauMode, setBureauMode] = useState("cellules");
   const [celluleIds, setCelluleIds] = useState([]);
@@ -62,7 +88,10 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
     [users],
   );
   const eligibleOutsideCounselors = useMemo(
-    () => users.filter((item) => item.role === Role.CONSEILLER_HORS_CELLULE && item.actif),
+    () =>
+      users.filter(
+        (item) => item.role === Role.CONSEILLER_HORS_CELLULE && item.actif,
+      ),
     [users],
   );
   const deputies = useMemo(
@@ -79,16 +108,27 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
   const preferredCandidates = useMemo(
     () =>
       eligibleCounselors.filter(
-        (counselor) => !selectedCells.length || selectedCells.some((cellule) => cellule.id === counselor.celluleId),
+        (counselor) =>
+          !selectedCells.length ||
+          selectedCells.some((cellule) => cellule.id === counselor.celluleId),
       ),
     [eligibleCounselors, selectedCells],
   );
   const selectedCounselors = useMemo(
-    () => conseillerIds.map((id) => eligibleCounselors.find((counselor) => counselor.id === id)).filter(Boolean),
+    () =>
+      conseillerIds
+        .map((id) =>
+          eligibleCounselors.find((counselor) => counselor.id === id),
+        )
+        .filter(Boolean),
     [conseillerIds, eligibleCounselors],
   );
-  const externalCounselor = eligibleOutsideCounselors.find((candidate) => candidate.id === horsCelluleId);
-  const selectedDeputy = deputies.find((candidate) => candidate.id === adjointId);
+  const externalCounselor = eligibleOutsideCounselors.find(
+    (candidate) => candidate.id === horsCelluleId,
+  );
+  const selectedDeputy = deputies.find(
+    (candidate) => candidate.id === adjointId,
+  );
 
   const reset = () => {
     setStep("form");
@@ -125,24 +165,35 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
   };
 
   const validate = () => {
-    if (officeManager && bureauMode === "cellules" && (celluleIds.length < 1 || celluleIds.length > 2)) {
+    if (
+      officeManager &&
+      bureauMode === "cellules" &&
+      (celluleIds.length < 1 || celluleIds.length > 2)
+    ) {
       return "Choisissez une ou deux cellules.";
     }
     if (
       officeManager &&
       bureauMode === "cellules" &&
       preferredCounselorId !== "none" &&
-      !preferredCandidates.some((candidate) => candidate.id === preferredCounselorId)
+      !preferredCandidates.some(
+        (candidate) => candidate.id === preferredCounselorId,
+      )
     ) {
       return "Le conseiller préféré doit appartenir à l'une des cellules sélectionnées.";
     }
     if (officeManager && bureauMode === "hors_cellule" && !externalCounselor) {
       return "Choisissez le conseiller hors cellule à qui confier le dossier.";
     }
-    if (!officeManager && bureauMode === "cellules" && (conseillerIds.length < 1 || conseillerIds.length > 2)) {
+    if (
+      !officeManager &&
+      bureauMode === "cellules" &&
+      (conseillerIds.length < 1 || conseillerIds.length > 2)
+    ) {
       return "Choisissez un ou deux conseillers.";
     }
-    if (assignToDeputy && !selectedDeputy) return "Choisissez l'adjoint qui prendra en charge le dossier.";
+    if (assignToDeputy && !selectedDeputy)
+      return "Choisissez l'adjoint qui prendra en charge le dossier.";
     return "";
   };
 
@@ -155,7 +206,8 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
       return {
         type: "BUREAU_VERS_CELLULE",
         cellules: celluleIds.map((id) => ({ celluleId: id })),
-        conseillerPrefereId: preferredCounselorId === "none" ? null : preferredCounselorId,
+        conseillerPrefereId:
+          preferredCounselorId === "none" ? null : preferredCounselorId,
         adjointId: assignToDeputy ? adjointId : null,
       };
     }
@@ -184,7 +236,10 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
       reset();
       onOpenChange(false);
     } catch (assignmentError) {
-      setError(assignmentError?.message || "L'affectation n'a pas pu être enregistrée.");
+      setError(
+        assignmentError?.message ||
+          "L'affectation n'a pas pu être enregistrée.",
+      );
       setStep("form");
     } finally {
       setSaving(false);
@@ -207,7 +262,11 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{step === "review" ? "Récapitulatif de l'affectation" : "Affecter le dossier"}</DialogTitle>
+          <DialogTitle>
+            {step === "review"
+              ? "Récapitulatif de l'affectation"
+              : "Affecter le dossier"}
+          </DialogTitle>
           <DialogDescription>
             {dossier.reference} · {dossier.objet}
           </DialogDescription>
@@ -218,14 +277,19 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
             {officeManager ? (
               <>
                 <fieldset className="space-y-2">
-                  <legend className="mb-2 text-sm font-medium">Mode d&apos;affectation</legend>
+                  <legend className="mb-2 text-sm font-medium">
+                    Mode d&apos;affectation
+                  </legend>
                   <div className="grid gap-2 sm:grid-cols-3">
                     {[
                       ["cellules", "Affecter à une ou deux cellules"],
                       ["self", "Traiter moi-même"],
                       ["hors_cellule", "Confier hors cellule"],
                     ].map(([value, label]) => (
-                      <label key={value} className="flex cursor-pointer items-start gap-2 rounded-lg border p-3 text-xs hover:bg-muted/40">
+                      <label
+                        key={value}
+                        className="flex cursor-pointer items-start gap-2 rounded-lg border p-3 text-xs hover:bg-muted/40"
+                      >
                         <input
                           type="radio"
                           name="bureau-mode"
@@ -242,9 +306,12 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
                 {bureauMode === "cellules" && (
                   <>
                     <fieldset className="space-y-2">
-                      <legend className="mb-2 text-sm font-medium">Cellules (maximum deux)</legend>
+                      <legend className="mb-2 text-sm font-medium">
+                        Cellules (maximum deux)
+                      </legend>
                       <p className="text-xs text-muted-foreground">
-                        La première cellule sélectionnée sera principale ; la seconde, collaboratrice.
+                        La première cellule sélectionnée sera principale ; la
+                        seconde, collaboratrice.
                       </p>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {cellules.map((cellule) => (
@@ -252,9 +319,11 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
                             key={cellule.id}
                             checked={celluleIds.includes(cellule.id)}
                             onChange={() => toggleCell(cellule.id)}
-                            description={`${celluleIds.includes(cellule.id)
-                              ? `Cellule ${celluleIds.indexOf(cellule.id) === 0 ? "principale" : "collaboratrice"} · `
-                              : ""}${cellule.nom}`}
+                            description={`${
+                              celluleIds.includes(cellule.id)
+                                ? `Cellule ${celluleIds.indexOf(cellule.id) === 0 ? "principale" : "collaboratrice"} · `
+                                : ""
+                            }${cellule.nom}`}
                           >
                             {cellule.code}
                           </CheckboxOption>
@@ -262,16 +331,27 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
                       </div>
                     </fieldset>
                     <div className="space-y-2">
-                      <Label htmlFor="preferred-counselor">Conseiller préféré (facultatif)</Label>
-                      <Select value={preferredCounselorId} onValueChange={setPreferredCounselorId}>
-                        <SelectTrigger id="preferred-counselor" className="w-full">
+                      <Label htmlFor="preferred-counselor">
+                        Conseiller préféré (facultatif)
+                      </Label>
+                      <Select
+                        value={preferredCounselorId}
+                        onValueChange={setPreferredCounselorId}
+                      >
+                        <SelectTrigger
+                          id="preferred-counselor"
+                          className="w-full"
+                        >
                           <SelectValue placeholder="Aucun conseiller préféré" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">Aucun conseiller préféré</SelectItem>
+                          <SelectItem value="none">
+                            Aucun conseiller préféré
+                          </SelectItem>
                           {preferredCandidates.map((candidate) => (
                             <SelectItem key={candidate.id} value={candidate.id}>
-                              {personName(candidate)} · {candidate.cellule || "Sans cellule"}
+                              {personName(candidate)} ·{" "}
+                              {candidate.cellule || "Sans cellule"}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -281,8 +361,13 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
                 )}
                 {bureauMode === "hors_cellule" && (
                   <div className="space-y-2">
-                    <Label htmlFor="outside-counselor">Conseiller hors cellule</Label>
-                    <Select value={horsCelluleId} onValueChange={setHorsCelluleId}>
+                    <Label htmlFor="outside-counselor">
+                      Conseiller hors cellule
+                    </Label>
+                    <Select
+                      value={horsCelluleId}
+                      onValueChange={setHorsCelluleId}
+                    >
                       <SelectTrigger id="outside-counselor" className="w-full">
                         <SelectValue placeholder="Choisir un conseiller" />
                       </SelectTrigger>
@@ -306,7 +391,8 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
                       }}
                       description="La prise en charge reste active jusqu'à la signature."
                     >
-                      Confier le suivi et la prise en charge à mon adjoint jusqu&apos;à la signature
+                      Confier le suivi et la prise en charge à mon adjoint
+                      jusqu&apos;à la signature
                     </CheckboxOption>
                     {assignToDeputy && (
                       <div className="space-y-2">
@@ -317,7 +403,10 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
                           </SelectTrigger>
                           <SelectContent>
                             {deputies.map((candidate) => (
-                              <SelectItem key={candidate.id} value={candidate.id}>
+                              <SelectItem
+                                key={candidate.id}
+                                value={candidate.id}
+                              >
                                 {personName(candidate)}
                               </SelectItem>
                             ))}
@@ -331,13 +420,18 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
             ) : (
               <>
                 <fieldset className="space-y-2">
-                  <legend className="mb-2 text-sm font-medium">Mode d&apos;affectation</legend>
+                  <legend className="mb-2 text-sm font-medium">
+                    Mode d&apos;affectation
+                  </legend>
                   <div className="grid gap-2 sm:grid-cols-2">
                     {[
                       ["cellules", "Affecter à un ou deux conseillers"],
                       ["self", "Traiter moi-même"],
                     ].map(([value, label]) => (
-                      <label key={value} className="flex cursor-pointer items-start gap-2 rounded-lg border p-3 text-sm hover:bg-muted/40">
+                      <label
+                        key={value}
+                        className="flex cursor-pointer items-start gap-2 rounded-lg border p-3 text-sm hover:bg-muted/40"
+                      >
                         <input
                           type="radio"
                           name="cell-mode"
@@ -352,7 +446,9 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
                 </fieldset>
                 {bureauMode === "cellules" && (
                   <fieldset className="space-y-2">
-                    <legend className="mb-2 text-sm font-medium">Conseillers (maximum deux)</legend>
+                    <legend className="mb-2 text-sm font-medium">
+                      Conseillers (maximum deux)
+                    </legend>
                     {eligibleCounselors.length ? (
                       <div className="grid gap-2 sm:grid-cols-2">
                         {eligibleCounselors.map((candidate) => (
@@ -376,9 +472,20 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
               </>
             )}
 
-            {error && <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+            {error && (
+              <p
+                role="alert"
+                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              >
+                {error}
+              </p>
+            )}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => closeDialog(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => closeDialog(false)}
+              >
                 Annuler
               </Button>
               <Button type="button" onClick={handleReview}>
@@ -391,41 +498,87 @@ export function AssignDialog({ dossier, role, user, users, cellules, open, onOpe
           <div className="space-y-4">
             <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
               <h3 className="text-sm font-semibold">Dossier sélectionné</h3>
-              <p className="text-sm">{dossier.reference} · {dossier.objet}</p>
+              <p className="text-sm">
+                {dossier.reference} · {dossier.objet}
+              </p>
               <h3 className="pt-2 text-sm font-semibold">Affectation prévue</h3>
               {officeManager ? (
                 bureauMode === "self" ? (
-                  <p className="flex items-center gap-2 text-sm"><UserRound className="size-4" />Traitement par {personName(user)}</p>
+                  <p className="flex items-center gap-2 text-sm">
+                    <UserRound className="size-4" />
+                    Traitement par {personName(user)}
+                  </p>
                 ) : bureauMode === "hors_cellule" ? (
-                  <p className="flex items-center gap-2 text-sm"><UserRound className="size-4" />{personName(externalCounselor)}</p>
+                  <p className="flex items-center gap-2 text-sm">
+                    <UserRound className="size-4" />
+                    {personName(externalCounselor)}
+                  </p>
                 ) : (
                   <>
                     {selectedCells.map((cellule, index) => (
-                      <p key={cellule.id} className="flex items-center gap-2 text-sm">
+                      <p
+                        key={cellule.id}
+                        className="flex items-center gap-2 text-sm"
+                      >
                         <UsersRound className="size-4" />
-                        {cellule.code} · {index === 0 ? "principale" : "collaboratrice"}
+                        {cellule.code} ·{" "}
+                        {index === 0 ? "principale" : "collaboratrice"}
                       </p>
                     ))}
-                    <p className="text-sm">Conseiller préféré : {preferredCandidates.find((candidate) => candidate.id === preferredCounselorId)
-                      ? personName(preferredCandidates.find((candidate) => candidate.id === preferredCounselorId))
-                      : "Aucun"}</p>
-                    {assignToDeputy && <p className="text-sm">Prise en charge : {personName(selectedDeputy)} jusqu&apos;à la signature</p>}
+                    <p className="text-sm">
+                      Conseiller préféré :{" "}
+                      {preferredCandidates.find(
+                        (candidate) => candidate.id === preferredCounselorId,
+                      )
+                        ? personName(
+                            preferredCandidates.find(
+                              (candidate) =>
+                                candidate.id === preferredCounselorId,
+                            ),
+                          )
+                        : "Aucun"}
+                    </p>
+                    {assignToDeputy && (
+                      <p className="text-sm">
+                        Prise en charge : {personName(selectedDeputy)}{" "}
+                        jusqu&apos;à la signature
+                      </p>
+                    )}
                   </>
                 )
               ) : bureauMode === "self" ? (
-                <p className="flex items-center gap-2 text-sm"><UserRound className="size-4" />Traitement par {personName(user)}</p>
+                <p className="flex items-center gap-2 text-sm">
+                  <UserRound className="size-4" />
+                  Traitement par {personName(user)}
+                </p>
               ) : (
                 selectedCounselors.map((candidate) => (
-                  <p key={candidate.id} className="flex items-center gap-2 text-sm">
+                  <p
+                    key={candidate.id}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <Check className="size-4" />
-                    {personName(candidate)} · {candidate.cellule || "Sans cellule"}
+                    {personName(candidate)} ·{" "}
+                    {candidate.cellule || "Sans cellule"}
                   </p>
                 ))
               )}
             </div>
-            {error && <p role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+            {error && (
+              <p
+                role="alert"
+                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+              >
+                {error}
+              </p>
+            )}
             <DialogFooter>
-              <Button type="button" variant="outline" disabled={saving} onClick={() => setStep("form")}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={saving}
+                onClick={() => setStep("form")}
+              >
                 <ChevronLeft className="size-4" />
                 Modifier
               </Button>

@@ -8,10 +8,12 @@ import {
   Check,
   Download,
   FileText,
+  FolderSearch,
   Info,
   MessageSquareText,
   Send,
   ShieldCheck,
+  SquareStack,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -124,7 +126,9 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
   const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
   const [reopenReason, setReopenReason] = useState("");
   const [reopenAuthority, setReopenAuthority] = useState("Chef de bureau");
-  const [reopenDate, setReopenDate] = useState(new Date().toISOString().slice(0, 10));
+  const [reopenDate, setReopenDate] = useState(
+    new Date().toISOString().slice(0, 10),
+  );
   const [versionNotice, setVersionNotice] = useState("");
   const router = useRouter();
   const { role, currentUser } = useSessionStore();
@@ -139,7 +143,7 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
     (delegation) =>
       delegation.adjointId === user.id &&
       delegation.active &&
-      delegation.portee?.valider
+      delegation.portee?.valider,
   );
   const isOfficeReviewer =
     role === Role.CHEF_BUREAU ||
@@ -147,16 +151,23 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
   const canWrite = isWriter && isDraft;
   const canAddObservation =
     note.involvedUserIds?.includes(user.id) ||
-    [Role.CHEF_BUREAU, Role.CHEF_BUREAU_ADJOINT, Role.CHEF_CELLULE].includes(role);
+    [Role.CHEF_BUREAU, Role.CHEF_BUREAU_ADJOINT, Role.CHEF_CELLULE].includes(
+      role,
+    );
   const hasKeywords = note.motsCles?.some((keyword) => keyword.trim()) || false;
   const assignedCaseag = note.assignedCells?.some(
-    (cell) => cell.code === "CASEAG" && cell.delegationCorrection
+    (cell) => cell.code === "CASEAG" && cell.delegationCorrection,
   );
   const noteStatus = note.statutNote;
-  const canReopen = noteStatus === StatutNote.SIGNEE && !note.estRouverte &&
+  const canReopen =
+    noteStatus === StatutNote.SIGNEE &&
+    !note.estRouverte &&
     [Role.CHEF_BUREAU, Role.CHEF_BUREAU_ADJOINT].includes(role);
 
-  const workflowHistory = useMemo(() => note.workflowHistory || {}, [note.workflowHistory]);
+  const workflowHistory = useMemo(
+    () => note.workflowHistory || {},
+    [note.workflowHistory],
+  );
 
   async function refreshNote() {
     const updatedNote = await getNote(note.id);
@@ -170,7 +181,9 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
     try {
       await updateNoteKeywords(note.id, keywords);
     } catch (error) {
-      toast.error(error.message || "Les mots-clés n'ont pas pu être enregistrés.");
+      toast.error(
+        error.message || "Les mots-clés n'ont pas pu être enregistrés.",
+      );
     }
   }
 
@@ -184,11 +197,11 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
           tailleFichier: formatFileSize(file.size),
           commentaire: comment,
         },
-        user.id
+        user.id,
       );
       await refreshNote();
       setVersionNotice(
-        "Version déposée : le conseiller et le Chef de cellule concernés ont été notifiés."
+        "Version déposée : le conseiller et le Chef de cellule concernés ont été notifiés.",
       );
       toast.success("La nouvelle version a été déposée.");
     } catch (error) {
@@ -224,27 +237,29 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
     }
     await handleTransition(
       StatutNote.RELECTURE_CELLULE,
-      "La note a été soumise à la relecture de la cellule."
+      "La note a été soumise à la relecture de la cellule.",
     );
   }
 
   async function handleDialogConfirm() {
     if (!dialogComment.trim() || isWorking) return;
     const isReturn = dialogAction === DIALOG_ACTIONS.RETURN_TO_AUTHOR;
-    const nextStatus = isReturn ? StatutNote.BROUILLON : StatutNote.RELECTURE_CELLULE;
+    const nextStatus = isReturn
+      ? StatutNote.BROUILLON
+      : StatutNote.RELECTURE_CELLULE;
     setIsWorking(true);
     try {
       await transitionNoteWithObservation(
         note.id,
         nextStatus,
         dialogComment.trim(),
-        user.id
+        user.id,
       );
       await refreshNote();
       toast.success(
         isReturn
           ? "La note a été renvoyée au rédacteur avec le motif."
-          : "La note a été envoyée en observation."
+          : "La note a été envoyée en observation.",
       );
       setDialogAction(null);
       setDialogComment("");
@@ -270,25 +285,37 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
       await resolveObservation(observationId, resolved, user.id);
       await refreshNote();
     } catch (error) {
-      toast.error(error.message || "L'observation n'a pas pu être mise à jour.");
+      toast.error(
+        error.message || "L'observation n'a pas pu être mise à jour.",
+      );
     }
   }
 
   async function handleReopen() {
-    if (!reopenReason.trim() || !reopenAuthority.trim() || !reopenDate || isWorking) return;
+    if (
+      !reopenReason.trim() ||
+      !reopenAuthority.trim() ||
+      !reopenDate ||
+      isWorking
+    )
+      return;
     setIsWorking(true);
     try {
       const result = await reouvrirNote(
         note.id,
         { motif: reopenReason, autorisePar: reopenAuthority, date: reopenDate },
-        user.id
+        user.id,
       );
       await refreshNote();
-      toast.success("La note signée a été conservée et un nouveau cycle de rédaction a été ouvert.");
+      toast.success(
+        "La note signée a été conservée et un nouveau cycle de rédaction a été ouvert.",
+      );
       setReopenDialogOpen(false);
       router.push(`/dossiers/${dossierId}/notes/${result.newNote.id}`);
     } catch (error) {
-      toast.error(error.message || "La réouverture n'a pas pu être enregistrée.");
+      toast.error(
+        error.message || "La réouverture n'a pas pu être enregistrée.",
+      );
     } finally {
       setIsWorking(false);
     }
@@ -296,7 +323,8 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
 
   const latestVersion = note.versions[0];
   const originalSignedVersion = note.signedOriginalVersion;
-  const typeLabel = DOCUMENT_LABELS[note.typeDocument] || note.typeDocument || "Document";
+  const typeLabel =
+    DOCUMENT_LABELS[note.typeDocument] || note.typeDocument || "Document";
   const recipients = note.destinataire || "—";
   const dossierReference = note.dossier?.reference || dossierId;
 
@@ -325,7 +353,10 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Document et destinataire</CardTitle>
+          <CardTitle className="text-base flex items-center gap-1">
+            <FileText size={18} className="text-secondary" /> Document et
+            destinataire
+          </CardTitle>
           <CardDescription>
             Rédacteur : {note.redacteurNom} · Conseiller(s) assigné(s) :{" "}
             {note.conseillersAssignes?.map(displayName).join(", ") || "—"}
@@ -333,16 +364,22 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1 rounded-lg border p-3">
-            <p className="text-xs font-medium text-muted-foreground">Type de document</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              Type de document
+            </p>
             <p className="font-medium">{typeLabel}</p>
           </div>
           <div className="space-y-1 rounded-lg border p-3">
-            <p className="text-xs font-medium text-muted-foreground">Destinataire</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              Destinataire
+            </p>
             <p className="font-medium">{recipients}</p>
           </div>
           {note.dossier?.objet && (
             <div className="space-y-1 sm:col-span-2">
-              <p className="text-xs font-medium text-muted-foreground">Objet du dossier</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                Objet du dossier
+              </p>
               <p className="text-sm">{note.dossier.objet}</p>
             </div>
           )}
@@ -353,14 +390,19 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
         <ReopenedBanner
           note={note}
           onViewOriginalVersion={
-            originalSignedVersion ? () => fakeDocxDownload(originalSignedVersion) : undefined
+            originalSignedVersion
+              ? () => fakeDocxDownload(originalSignedVersion)
+              : undefined
           }
         />
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Circuit de traitement</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">
+            <SquareStack size={18} className="text-secondary" /> Circuit de
+            traitement
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <WorkflowStepper
@@ -373,10 +415,14 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
 
       {assignedCaseag && (
         <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
-          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+          <ShieldCheck
+            className="mt-0.5 size-5 shrink-0 text-primary"
+            aria-hidden="true"
+          />
           <p>
-            <strong>CASEAG — délégation de correction :</strong> Délégation de correction au
-            nom du Chef de bureau — validation finale réservée au Chef de bureau.
+            <strong>CASEAG — délégation de correction :</strong> Délégation de
+            correction au nom du Chef de bureau — validation finale réservée au
+            Chef de bureau.
           </p>
         </div>
       )}
@@ -385,9 +431,13 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
         <div className="space-y-5">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Mots-clés obligatoires</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2">
+                <FolderSearch size={18} className="text-secondary" />
+                Mots-clés obligatoires
+              </CardTitle>
               <CardDescription>
-                Au moins un mot-clé est requis avant le dépôt d&apos;une version ou la soumission.
+                Au moins un mot-clé est requis avant le dépôt d&apos;une version
+                ou la soumission.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -403,15 +453,19 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
           <Card id="versions">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <FileText className="size-4 text-primary" />
-                Versions Word
+                <FileText className="size-4 text-secondary" />
+                Versions deposés (Word)
               </CardTitle>
               <CardDescription>
-                Les documents se travaillent dans Word ; aucune édition en ligne n&apos;est proposée.
+                Les documents se travaillent dans Word ; aucune édition en ligne
+                n&apos;est proposée.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <VersionList versions={note.versions} onDownload={fakeDocxDownload} />
+              <VersionList
+                versions={note.versions}
+                onDownload={fakeDocxDownload}
+              />
               {canWrite && (
                 <div className="space-y-3 border-t pt-4">
                   {!hasKeywords && (
@@ -437,7 +491,8 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
               )}
               {latestVersion && (
                 <p className="text-xs text-muted-foreground">
-                  Dernier dépôt : {latestVersion.nomFichier} · {formatDate(latestVersion.dateCreation)}
+                  Dernier dépôt : {latestVersion.nomFichier} ·{" "}
+                  {formatDate(latestVersion.dateCreation)}
                 </p>
               )}
             </CardContent>
@@ -468,7 +523,9 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Actions</CardTitle>
-              <CardDescription>Disponibles selon votre rôle et le statut de la note.</CardDescription>
+              <CardDescription>
+                Disponibles selon votre rôle et le statut de la note.
+              </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
               {canWrite && (
@@ -478,10 +535,12 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
                     variant="outline"
                     disabled={!hasKeywords || isUploading || isWorking}
                     onClick={() => {
-                      document.getElementById("version-dropzone-form")?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center",
-                      });
+                      document
+                        .getElementById("version-dropzone-form")
+                        ?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
                     }}
                   >
                     <Download className="size-4" />
@@ -489,7 +548,12 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
                   </Button>
                   <Button
                     type="button"
-                    disabled={!hasKeywords || note.versions.length === 0 || isWorking || isUploading}
+                    disabled={
+                      !hasKeywords ||
+                      note.versions.length === 0 ||
+                      isWorking ||
+                      isUploading
+                    }
                     onClick={handleSubmitForReview}
                   >
                     <Send className="size-4" />
@@ -497,54 +561,63 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
                   </Button>
                 </>
               )}
-              {isCellReviewer && noteStatus === StatutNote.RELECTURE_CELLULE && (
-                <>
-                  <Button
-                    type="button"
-                    disabled={isWorking}
-                    onClick={() =>
-                      handleTransition(
-                        StatutNote.RELECTURE_BUREAU,
-                        "La note a été envoyée au Chef de bureau."
-                      )
-                    }
-                  >
-                    <Send className="size-4" />
-                    Envoyer au Chef de bureau
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isWorking}
-                    onClick={() => setDialogAction(DIALOG_ACTIONS.RETURN_TO_AUTHOR)}
-                  >
-                    Renvoyer au rédacteur avec motif
-                  </Button>
-                </>
-              )}
-              {isOfficeReviewer && noteStatus === StatutNote.RELECTURE_BUREAU && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isWorking}
-                    onClick={() => setDialogAction(DIALOG_ACTIONS.SEND_IN_OBSERVATION)}
-                  >
-                    <MessageSquareText className="size-4" />
-                    Envoyer en observation
-                  </Button>
-                  <Button
-                    type="button"
-                    disabled={isWorking}
-                    onClick={() =>
-                      handleTransition(StatutNote.VALIDEE, "La note a été validée.")
-                    }
-                  >
-                    <Check className="size-4" />
-                    Valider
-                  </Button>
-                </>
-              )}
+              {isCellReviewer &&
+                noteStatus === StatutNote.RELECTURE_CELLULE && (
+                  <>
+                    <Button
+                      type="button"
+                      disabled={isWorking}
+                      onClick={() =>
+                        handleTransition(
+                          StatutNote.RELECTURE_BUREAU,
+                          "La note a été envoyée au Chef de bureau.",
+                        )
+                      }
+                    >
+                      <Send className="size-4" />
+                      Envoyer au Chef de bureau
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isWorking}
+                      onClick={() =>
+                        setDialogAction(DIALOG_ACTIONS.RETURN_TO_AUTHOR)
+                      }
+                    >
+                      Renvoyer au rédacteur avec motif
+                    </Button>
+                  </>
+                )}
+              {isOfficeReviewer &&
+                noteStatus === StatutNote.RELECTURE_BUREAU && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isWorking}
+                      onClick={() =>
+                        setDialogAction(DIALOG_ACTIONS.SEND_IN_OBSERVATION)
+                      }
+                    >
+                      <MessageSquareText className="size-4" />
+                      Envoyer en observation
+                    </Button>
+                    <Button
+                      type="button"
+                      disabled={isWorking}
+                      onClick={() =>
+                        handleTransition(
+                          StatutNote.VALIDEE,
+                          "La note a été validée.",
+                        )
+                      }
+                    >
+                      <Check className="size-4" />
+                      Valider
+                    </Button>
+                  </>
+                )}
               {canReopen && (
                 <PermissionGate
                   ability="reouvrir"
@@ -562,11 +635,16 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
                 </PermissionGate>
               )}
               {!canWrite &&
-                !(isCellReviewer && noteStatus === StatutNote.RELECTURE_CELLULE) &&
-                !(isOfficeReviewer && noteStatus === StatutNote.RELECTURE_BUREAU) &&
+                !(
+                  isCellReviewer && noteStatus === StatutNote.RELECTURE_CELLULE
+                ) &&
+                !(
+                  isOfficeReviewer && noteStatus === StatutNote.RELECTURE_BUREAU
+                ) &&
                 !canReopen && (
                   <p className="text-sm text-muted-foreground">
-                    Aucune action n&apos;est disponible pour votre rôle à cette étape.
+                    Aucune action n&apos;est disponible pour votre rôle à cette
+                    étape.
                   </p>
                 )}
             </CardContent>
@@ -591,7 +669,8 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
                 : "Envoyer la note en observation"}
             </DialogTitle>
             <DialogDescription>
-              Indiquez le motif ou les corrections attendues. Ce texte sera ajouté au fil des observations.
+              Indiquez le motif ou les corrections attendues. Ce texte sera
+              ajouté au fil des observations.
             </DialogDescription>
           </DialogHeader>
           <label htmlFor="note-action-comment" className="text-sm font-medium">
@@ -639,7 +718,8 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
           <DialogHeader>
             <DialogTitle>Réouvrir la note signée</DialogTitle>
             <DialogDescription>
-              Cette procédure exceptionnelle conserve la note signée d’origine et ouvre une nouvelle note.
+              Cette procédure exceptionnelle conserve la note signée d’origine
+              et ouvre une nouvelle note.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -658,23 +738,45 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="reopen-authority" className="text-sm font-medium">
+                <label
+                  htmlFor="reopen-authority"
+                  className="text-sm font-medium"
+                >
                   Autorité ayant autorisé
                 </label>
-                <Select value={reopenAuthority} onValueChange={setReopenAuthority}>
-                  <SelectTrigger id="reopen-authority" className="h-9 w-full bg-background px-3 text-sm">
+                <Select
+                  value={reopenAuthority}
+                  onValueChange={setReopenAuthority}
+                >
+                  <SelectTrigger
+                    id="reopen-authority"
+                    className="h-9 w-full bg-background px-3 text-sm"
+                  >
                     <SelectValue placeholder="Sélectionner une autorité" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Chef de bureau" className="text-xs">Chef de bureau</SelectItem>
-                    <SelectItem value="Directeur de cabinet" className="text-xs">Directeur de cabinet</SelectItem>
-                    <SelectItem value="Chef d’état-major" className="text-xs">Chef d’état-major</SelectItem>
-                    <SelectItem value="Autre autorité" className="text-xs">Autre autorité</SelectItem>
+                    <SelectItem value="Chef de bureau" className="text-xs">
+                      Chef de bureau
+                    </SelectItem>
+                    <SelectItem
+                      value="Directeur de cabinet"
+                      className="text-xs"
+                    >
+                      Directeur de cabinet
+                    </SelectItem>
+                    <SelectItem value="Chef d’état-major" className="text-xs">
+                      Chef d’état-major
+                    </SelectItem>
+                    <SelectItem value="Autre autorité" className="text-xs">
+                      Autre autorité
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="reopen-date" className="text-sm font-medium">Date</label>
+                <label htmlFor="reopen-date" className="text-sm font-medium">
+                  Date
+                </label>
                 <input
                   id="reopen-date"
                   type="date"
@@ -687,7 +789,10 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
             </div>
             <div className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
               <p>La version signée d&apos;origine est conservée.</p>
-              <p>La nouvelle note aura son propre circuit de validation, sa signature, son numéro et sa date.</p>
+              <p>
+                La nouvelle note aura son propre circuit de validation, sa
+                signature, son numéro et sa date.
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -702,7 +807,12 @@ export default function DetailNoteClient({ initialNote, dossierId }) {
             <Button
               type="button"
               variant="destructive"
-              disabled={!reopenReason.trim() || !reopenAuthority.trim() || !reopenDate || isWorking}
+              disabled={
+                !reopenReason.trim() ||
+                !reopenAuthority.trim() ||
+                !reopenDate ||
+                isWorking
+              }
               onClick={handleReopen}
             >
               Confirmer la réouverture

@@ -66,7 +66,9 @@ export function VersionList({
     return (
       <div className="flex flex-col items-center justify-center p-6 border rounded-lg bg-muted/20 text-center">
         <FileText className="size-8 text-muted-foreground/60 mb-1.5" />
-        <span className="text-xs font-medium text-foreground">Aucune version déposée</span>
+        <span className="text-xs font-medium text-foreground">
+          Aucune version déposée
+        </span>
         <span className="text-[11px] text-muted-foreground mt-0.5">
           Déposez la première version Word (.docx) ci-dessous.
         </span>
@@ -82,7 +84,7 @@ export function VersionList({
         <span className="font-semibold text-foreground">
           Historique des versions ({sortedVersions.length})
         </span>
-        <span className="text-[11px] font-mono">Format Word (.docx)</span>
+        <span className="text-[11px]">Format Word (.docx)</span>
       </div>
 
       <div className="space-y-2">
@@ -98,8 +100,8 @@ export function VersionList({
               className={cn(
                 "group relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border transition-all",
                 isLatest
-                  ? "border-primary/40 bg-primary/5 shadow-xs ring-1 ring-primary/20"
-                  : "border-border bg-card hover:bg-muted/30"
+                  ? "border-secondary/40 bg-secondary/5 shadow-xs ring-1 ring-secondary/20"
+                  : "border-border bg-card hover:bg-muted/30",
               )}
             >
               {/* Informations du fichier */}
@@ -108,8 +110,8 @@ export function VersionList({
                   className={cn(
                     "flex size-9 shrink-0 items-center justify-center rounded-lg border shadow-2xs",
                     isLatest
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted text-muted-foreground border-border"
+                      ? "bg-secondary text-secondary-foreground border-secondary"
+                      : "bg-muted text-muted-foreground border-border",
                   )}
                 >
                   <span className="font-bold text-xs font-mono">
@@ -117,41 +119,44 @@ export function VersionList({
                   </span>
                 </div>
 
-                <div className="flex flex-col min-w-0 gap-0.5">
+                <div className="flex flex-col min-w-0 gap-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-xs text-foreground truncate">
-                      {version.nomFichier || `Note_de_synthese_V${version.numeroVersion}.docx`}
+                    <span className="font-semibold text-base text-foreground truncate">
+                      {version.nomFichier ||
+                        `Note_de_synthese_V${version.numeroVersion}.docx`}
                     </span>
 
                     {isLatest && (
                       <Badge
                         variant="default"
-                        className="text-[10px] px-1.5 py-0 h-4 bg-primary text-primary-foreground font-medium"
+                        className="text-[10px] px-1.5 py-2 h-4 bg-secondary text-secondary-foreground font-medium"
                       >
                         Dernière version
                       </Badge>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1 font-medium text-foreground/80">
-                      <User className="size-3 text-muted-foreground" />
-                      {version.auteurNom || version.auteur || "Conseiller rédacteur"}
+                      <User className="size-4 text-muted-foreground" />
+                      {version.auteurNom ||
+                        version.auteur ||
+                        "Conseiller rédacteur"}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="size-3 text-muted-foreground" />
                       {formatDateTime(version.dateCreation)}
                     </span>
-                    <span className="flex items-center gap-1 font-mono text-[10px]">
-                      <HardDrive className="size-3 text-muted-foreground" />
+                    <span className="flex items-center gap-1  text-xs">
+                      <HardDrive className="size-4 text-muted-foreground" />
                       {version.tailleFichier || "148 Ko"}
                     </span>
                   </div>
 
                   {/* Commentaire de version */}
                   {version.commentaire && (
-                    <div className="mt-1 flex items-start gap-1 text-[11px] text-muted-foreground/90 italic bg-muted/40 rounded px-2 py-1 border border-border/40">
-                      <MessageSquare className="size-3 shrink-0 mt-0.5 text-muted-foreground" />
+                    <div className="mt-1 flex items-start gap-1 text-xs text-muted-foreground/90 italic bg-muted/40 rounded px-2 py-1 border border-border/40">
+                      <MessageSquare className="size-3 shrink-0 mt-0.5 text-secondary" />
                       <span>« {version.commentaire} »</span>
                     </div>
                   )}
@@ -201,4 +206,3 @@ export function VersionList({
 }
 
 export default VersionList;
-

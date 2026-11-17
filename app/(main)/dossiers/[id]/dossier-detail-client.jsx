@@ -823,8 +823,7 @@ export default function DossierDetailClient({ dossierId }) {
                                 ) : (
                                   <p className="mt-1">
                                     Aucun aperçu de première page n&apos;est
-                                    disponible dans les données de
-                                    démonstration.
+                                    disponible.
                                   </p>
                                 )}
                               </div>

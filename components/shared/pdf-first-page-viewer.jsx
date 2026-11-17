@@ -200,7 +200,7 @@ export function PdfFirstPageViewer({
       )}
 
       {/* Cadre de visualisation de la première page */}
-      <div className="relative flex-1 min-h-[380px] max-h-[640px] bg-muted/20 overflow-auto p-4 flex items-center justify-center mt-6">
+      <div className="relative flex-1 min-h-[380px] max-h-[640px] bg-muted/20 overflow-auto p-4 flex items-center justify-center">
         <div
           className="transition-transform duration-200 shadow-md border rounded-md bg-white dark:bg-zinc-900 overflow-hidden"
           style={{
@@ -214,7 +214,7 @@ export function PdfFirstPageViewer({
           <iframe
             src={`${src}#toolbar=0&navpanes=0&scrollbar=0`}
             title={title}
-            className="w-full h-full border-none pointer-events-auto"
+            className="w-full h-full border-none pointer-events-auto pt-26"
             loading="lazy"
           />
         </div>

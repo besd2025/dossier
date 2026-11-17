@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Landmark, Plus, Building, User, HelpCircle, Check } from "lucide-react";
+import {
+  Landmark,
+  Plus,
+  Building,
+  User,
+  HelpCircle,
+  Check,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -110,27 +117,27 @@ export function ProvenanceSelect({
           onValueChange={handleSelectChange}
           disabled={disabled}
         >
-          <SelectTrigger className="w-full text-xs h-9 bg-background">
+          <SelectTrigger className="w-full text-xs h-10 bg-background hid">
             <div className="flex items-center gap-2 truncate">
               <Landmark className="size-3.5 text-muted-foreground shrink-0" />
-              <SelectValue placeholder={placeholder}>
+              <SelectValue placeholder={placeholder} className="text-sm">
                 {selectedItem ? selectedItem.nom : placeholder}
               </SelectValue>
             </div>
           </SelectTrigger>
 
-          <SelectContent className="max-h-72">
+          <SelectContent className="max-h-72 px-2 py-1 w-full">
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase font-mono text-muted-foreground">
+              <SelectLabel className="text-xs uppercase  text-muted-foreground">
                 Institutions & Ministères
               </SelectLabel>
               {list
                 .filter((p) => p.actif !== false)
                 .map((prov) => (
-                  <SelectItem key={prov.id} value={prov.id} className="text-xs">
+                  <SelectItem key={prov.id} value={prov.id} className="text-sm">
                     <div className="flex items-center justify-between w-full gap-2">
                       <span className="truncate">{prov.nom}</span>
-                      <span className="text-[10px] text-muted-foreground/70 font-mono">
+                      <span className="text-xs text-muted-foreground font-mono">
                         {prov.categorie}
                       </span>
                     </div>
@@ -143,11 +150,11 @@ export function ProvenanceSelect({
             {/* Option spéciale « Autre » ouvrant le dialogue */}
             <SelectItem
               value="ADD_NEW_PROVENANCE"
-              className="text-xs font-semibold text-primary focus:bg-primary/10 cursor-pointer"
+              className="text-sm font-semibold text-primary focus:bg-primary/10 cursor-pointer"
             >
               <div className="flex items-center gap-1.5 py-0.5">
                 <Plus className="size-3.5 text-primary" />
-                <span>+ Autre provenance (Créer...)</span>
+                <span>Autre provenance (Créer...)</span>
               </div>
             </SelectItem>
           </SelectContent>
@@ -158,19 +165,28 @@ export function ProvenanceSelect({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold flex items-center gap-2">
+            <DialogTitle className="text-lg font-semibold flex items-center gap-2">
               <Landmark className="size-4 text-primary" />
               <span>Ajouter une nouvelle provenance</span>
             </DialogTitle>
-            <DialogDescription className="text-xs">
-              Renseignez l&apos;institution ou l&apos;autorité d&apos;origine. Elle sera enregistrée et immédiatement sélectionnée pour ce dossier.
+            <DialogDescription className="text-sm">
+              Renseignez l&apos;institution ou l&apos;autorité d&apos;origine.
+              Elle sera enregistrée et immédiatement sélectionnée pour ce
+              dossier.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateNewProvenance} className="space-y-3.5 py-2">
-            <div className="space-y-1.5">
-              <label htmlFor="prov-name" className="text-xs font-medium text-foreground">
-                Intitulé officiel de la provenance <span className="text-destructive">*</span>
+          <form
+            onSubmit={handleCreateNewProvenance}
+            className="flex flex-col space-y-4 py-2"
+          >
+            <div className="flex flex-col space-y-2">
+              <label
+                htmlFor="prov-name"
+                className="text-sm font-medium text-foreground"
+              >
+                Intitulé officiel de la provenance{" "}
+                <span className="text-destructive">*</span>
               </label>
               <Input
                 id="prov-name"
@@ -186,25 +202,31 @@ export function ProvenanceSelect({
               {error && <p className="text-[11px] text-destructive">{error}</p>}
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="prov-cat" className="text-xs font-medium text-foreground">
+            <div className="flex flex-col space-y-2">
+              <label
+                htmlFor="prov-cat"
+                className="text-sm font-medium text-foreground"
+              >
                 Catégorie administrative
               </label>
               <Select value={newCategorie} onValueChange={setNewCategorie}>
-                <SelectTrigger id="prov-cat" className="text-xs h-8 bg-background">
+                <SelectTrigger
+                  id="prov-cat"
+                  className="text-xs h-8 w-full bg-background"
+                >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="MINISTERE" className="text-xs">
+                <SelectContent className=" px-2 py-1 w-full">
+                  <SelectItem value="MINISTERE" className="text-sm">
                     Ministère / Secrétariat d&apos;État
                   </SelectItem>
-                  <SelectItem value="INSTITUTION" className="text-xs">
+                  <SelectItem value="INSTITUTION" className="text-sm">
                     Institution publique / Armée / Ambassade
                   </SelectItem>
-                  <SelectItem value="INDIVIDUEL" className="text-xs">
+                  <SelectItem value="INDIVIDUEL" className="text-sm">
                     Requête individuelle / Personnalité
                   </SelectItem>
-                  <SelectItem value="AUTRE" className="text-xs">
+                  <SelectItem value="AUTRE" className="text-sm">
                     Autre organisme
                   </SelectItem>
                 </SelectContent>
@@ -217,11 +239,15 @@ export function ProvenanceSelect({
                 variant="outline"
                 size="sm"
                 onClick={() => setDialogOpen(false)}
-                className="h-8 text-xs"
+                className="h-9 text-xs"
               >
                 Annuler
               </Button>
-              <Button type="submit" size="sm" className="h-8 text-xs gap-1.5">
+              <Button
+                type="submit"
+                size="sm"
+                className="h-9 py-3 text-xs gap-1.5"
+              >
                 <Check className="size-3.5" />
                 <span>Créer et sélectionner</span>
               </Button>

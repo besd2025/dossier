@@ -2,6 +2,7 @@ import {
   Bell,
   Building2,
   CheckSquare,
+  DiagramFlowHorizontal,
   FileCheck2,
   FilePlus2,
   FileText,
@@ -65,7 +66,7 @@ export const sidebarItems = [
         id: "a-affecter",
         title: "À affecter",
         url: "/a-affecter",
-        icon: FileText,
+        icon: DiagramFlowHorizontal,
       },
       {
         id: "mes-dossiers",

@@ -80,7 +80,9 @@ export function ObservationThread({
       setNewText("");
       setSubmitError("");
     } catch (error) {
-      setSubmitError(error?.message || "L'observation n'a pas pu être publiée.");
+      setSubmitError(
+        error?.message || "L'observation n'a pas pu être publiée.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -89,7 +91,7 @@ export function ObservationThread({
   return (
     <div className={cn("space-y-3.5", className)}>
       {/* En-tête avec compteur et onglets de filtre */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b">
         <div className="flex items-center gap-2">
           <MessageSquare className="size-4 text-primary" />
           <span className="font-semibold text-xs text-foreground">
@@ -98,7 +100,7 @@ export function ObservationThread({
           {pendingCount > 0 && (
             <Badge
               variant="secondary"
-              className="text-[10px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-mono h-4 px-1.5"
+              className="text-xs bg-amber-500/15 text-amber-700 dark:text-amber-400 font-mono h-4 px-1.5"
             >
               {pendingCount} en suspens
             </Badge>
@@ -111,10 +113,10 @@ export function ObservationThread({
             type="button"
             onClick={() => setFilter("ALL")}
             className={cn(
-              "px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors",
+              "p-2 rounded-md text-xs font-medium transition-colors",
               filter === "ALL"
-                ? "bg-background text-foreground shadow-2xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             Toutes ({observations.length})
@@ -123,10 +125,10 @@ export function ObservationThread({
             type="button"
             onClick={() => setFilter("PENDING")}
             className={cn(
-              "px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors",
+              "p-2 rounded-md text-xs font-medium transition-colors",
               filter === "PENDING"
-                ? "bg-background text-foreground shadow-2xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             En suspens ({pendingCount})
@@ -135,10 +137,10 @@ export function ObservationThread({
             type="button"
             onClick={() => setFilter("RESOLVED")}
             className={cn(
-              "px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors",
+              "p-2 rounded-md text-xs font-medium transition-colors",
               filter === "RESOLVED"
-                ? "bg-background text-foreground shadow-2xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             Résolues ({resolvedCount})
@@ -169,7 +171,9 @@ export function ObservationThread({
               className="h-7 text-xs gap-1.5 px-3"
             >
               <Send className="size-3" />
-              <span>{isSubmitting ? "Publication..." : "Ajouter l'observation"}</span>
+              <span>
+                {isSubmitting ? "Publication..." : "Ajouter l'observation"}
+              </span>
             </Button>
           </div>
           {submitError && (
@@ -198,15 +202,15 @@ export function ObservationThread({
               <div
                 key={obs.id}
                 className={cn(
-                  "p-3 rounded-lg border transition-all text-xs space-y-2",
+                  "p-3 rounded-lg border transition-all text-sm space-y-2",
                   obs.resolue
                     ? "bg-muted/30 border-border opacity-85"
-                    : "bg-card border-border shadow-2xs"
+                    : "bg-card border-border shadow-2xs",
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Avatar className="size-6 bg-primary/10 text-primary">
+                    <Avatar className="size-6 bg-primary text-primary">
                       <AvatarFallback className="text-[10px] font-semibold">
                         {getInitials(author)}
                       </AvatarFallback>
@@ -214,16 +218,18 @@ export function ObservationThread({
 
                     <div className="flex flex-col">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-semibold text-foreground">{author}</span>
+                        <span className="font-semibold text-foreground">
+                          {author}
+                        </span>
                         {obs.auteurRole && (
-                          <span className="text-[10px] text-muted-foreground font-mono">
+                          <span className="text-xs text-muted-foreground">
                             ({obs.auteurRole})
                           </span>
                         )}
                       </div>
                       <time
                         dateTime={obs.dateCreation}
-                        className="text-[10px] text-muted-foreground font-mono"
+                        className="text-xs text-muted-foreground"
                       >
                         {formatDateTime(obs.dateCreation)}
                       </time>
@@ -241,10 +247,10 @@ export function ObservationThread({
                     />
                     <span
                       className={cn(
-                        "text-[11px] font-medium",
+                        "text-xs font-medium",
                         obs.resolue
                           ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-muted-foreground hover:text-foreground"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {obs.resolue ? "Résolue" : "Marquer résolue"}
@@ -255,8 +261,8 @@ export function ObservationThread({
                 {/* Contenu de la remarque */}
                 <p
                   className={cn(
-                    "text-xs leading-relaxed pl-8",
-                    obs.resolue && "text-muted-foreground line-through"
+                    "text-sm leading-relaxed pl-8",
+                    obs.resolue && "text-muted-foreground line-through",
                   )}
                 >
                   {obs.texte}
@@ -264,8 +270,8 @@ export function ObservationThread({
 
                 {/* Détails de résolution */}
                 {obs.resolue && obs.dateResolution && (
-                  <div className="pl-8 text-[10px] text-emerald-600 dark:text-emerald-400 font-mono flex items-center gap-1">
-                    <Check className="size-3" />
+                  <div className="pl-8 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <Check className="size-4" />
                     <span>
                       Résolue le {formatDateTime(obs.dateResolution)}
                       {obs.resolueParNom && ` par ${obs.resolueParNom}`}
